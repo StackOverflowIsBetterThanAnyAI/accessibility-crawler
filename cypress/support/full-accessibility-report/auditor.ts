@@ -1,3 +1,5 @@
+import { formatWCAGTag } from './format-wcag-tag'
+
 export const runAxeAudit = (currentPath: string, errorList: string[]) => {
     cy.injectAxe()
 
@@ -19,9 +21,11 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
         (violations) => {
             violations.forEach((violation) => {
                 const nodes = violation.nodes.length
-                const tags = violation.tags
-                    .filter((t) => t.startsWith('wcag'))
-                    .join(', ')
+                const tags =
+                    violation.tags
+                        .filter((tag) => /^wcag/i.test(tag))
+                        .map((tag) => formatWCAGTag(tag))
+                        .join(', ') || 'no WCAG reference'
 
                 const message =
                     `[${currentPath}] 🚨 AXE: ${violation.id} [${tags}] (${violation.impact} / ${nodes} element${nodes !== 1 ? 's' : ''}) - ${violation.help}` +
