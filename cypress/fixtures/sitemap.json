@@ -1,0 +1,12 @@
+{
+  "urls": [
+    "/",
+    "/about",
+    "/contact",
+    "/shop",
+    "/about/secret",
+    "/shop/product?id=1",
+    "/about/secret/deep"
+  ],
+  "generatedAt": "2026-03-19T15:46:17.375Z"
+}
