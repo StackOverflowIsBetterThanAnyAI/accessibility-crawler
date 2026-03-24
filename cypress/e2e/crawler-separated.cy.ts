@@ -20,7 +20,9 @@ describe('Crawler: Discovery Phase', () => {
             }
 
             const currentPath = queue.shift()
-            if (!currentPath || visited.has(removeTrailingSlash(currentPath))) {
+            if (!currentPath) return
+
+            if (visited.has(removeTrailingSlash(currentPath))) {
                 processQueue()
                 return
             }
