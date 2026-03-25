@@ -35,13 +35,16 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
             )
         } else {
             accessibilityErrors.forEach((error, index) => {
-                cy.log(`${index + 1}. ${error}`)
+                cy.log(`❌ ${index + 1}. ${error}`)
             })
 
-            // expect(
-            //     accessibilityErrors.length,
-            //     'Total errors found during the audit: '
-            // ).to.equal(0)
+            cy.then(() => {
+                const errorMessage = accessibilityErrors.join('\n')
+                expect(
+                    accessibilityErrors.length,
+                    `Found ${accessibilityErrors.length} issues:\n${errorMessage}`
+                ).to.equal(0)
+            })
         }
     })
 })
