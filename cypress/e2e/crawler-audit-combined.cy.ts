@@ -1,9 +1,9 @@
 import { runAxeAudit } from '../support/full-accessibility-report/auditor'
-import { getInternalLinks } from '../support/full-accessibility-report/crawler'
 import {
-    addLeadingSlash,
-    removeTrailingSlash,
-} from '../support/full-accessibility-report/url-helper'
+    getInternalLinks,
+    getSubPages,
+} from '../support/full-accessibility-report/crawler'
+import { removeTrailingSlash } from '../support/full-accessibility-report/url-helper'
 
 describe('Accessibility Audit: Combined Crawler with Auditor', () => {
     const baseUrl = 'http://localhost:5173'
@@ -21,12 +21,12 @@ describe('Accessibility Audit: Combined Crawler with Auditor', () => {
             const currentPath = queue.shift()
             if (!currentPath) return
 
-            if (visited.has(currentPath)) {
+            if (visited.has(removeTrailingSlash(currentPath))) {
                 processQueue()
                 return
             }
 
-            visited.add(currentPath)
+            visited.add(removeTrailingSlash(currentPath))
             const fullUrl = currentPath.startsWith('http')
                 ? currentPath
                 : baseUrl + currentPath
@@ -34,22 +34,11 @@ describe('Accessibility Audit: Combined Crawler with Auditor', () => {
             cy.visit(fullUrl).then(() => {
                 getInternalLinks(baseUrl).then((newLinks) => {
                     newLinks.forEach((link) => {
-                        const urlObj = new URL(link)
-                        const pathOnly = urlObj.pathname
-                        const fullPathAndQuery = urlObj.pathname + urlObj.search
-
-                        const normalizedPathOnly = removeTrailingSlash(pathOnly)
-
-                        // ignore paths where only query parameters differ
-                        const isPathPlanned = queue.some((queuedPath) => {
-                            const queuedPathOnly = new URL(
-                                baseUrl + addLeadingSlash(queuedPath)
-                            ).pathname
-                            const normalizedQueued =
-                                removeTrailingSlash(queuedPathOnly)
-
-                            return normalizedQueued === normalizedPathOnly
-                        })
+                        const [
+                            fullPathAndQuery,
+                            isPathPlanned,
+                            normalizedPathOnly,
+                        ] = getSubPages(baseUrl, link, queue)
 
                         if (
                             !visited.has(normalizedPathOnly) &&
