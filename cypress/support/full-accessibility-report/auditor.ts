@@ -29,7 +29,7 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
 
                 const message =
                     `[${currentPath}] 🚨 AXE: ${violation.id} [${tags}] (${violation.impact} / ${nodes} element${nodes !== 1 ? 's' : ''}) - ${violation.help}` +
-                    `   - Help: ${violation.helpUrl}`
+                    ` - Help: ${violation.helpUrl}`
                 errorList.push(message)
             })
         },
