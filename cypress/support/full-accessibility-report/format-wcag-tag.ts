@@ -1,8 +1,7 @@
 export const formatWCAGTag = (tag: string) => {
-    const upperTag = tag.toUpperCase()
-
-    const matchVersion = upperTag.match(/^(WCAG)(\d+)([A]+)$/i)
-    const matchSuccessCriterion = upperTag.match(/^(WCAG)(\d+)$/i)
+    const upperCaseTag = tag.toUpperCase()
+    const matchVersion = upperCaseTag.match(/^(WCAG)(\d+)([A]+)$/i)
+    const matchSuccessCriterion = upperCaseTag.match(/^(WCAG)(\d+)$/i)
 
     if (matchVersion) {
         const prefix = matchVersion[1]
@@ -16,11 +15,10 @@ export const formatWCAGTag = (tag: string) => {
             version = versionDigits.slice(0, -1) + '.' + versionDigits.slice(-1)
         }
 
-        return `${prefix} ${version} ${level.toUpperCase()}`
+        return `${prefix} ${version} ${level}`
     }
 
     if (matchSuccessCriterion) {
-        const prefix = matchSuccessCriterion[1]
         const successCriterion = matchSuccessCriterion[2]
 
         let criterion = ''
@@ -31,7 +29,7 @@ export const formatWCAGTag = (tag: string) => {
             }
         }
 
-        return `${prefix} ${criterion}`
+        return `Success Criterion ${criterion}`
     }
 
     return tag
