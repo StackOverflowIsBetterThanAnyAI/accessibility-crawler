@@ -7,7 +7,7 @@ import { removeTrailingSlash } from '../support/full-accessibility-report/url-he
 
 describe('Accessibility Audit: Combined Crawler with Auditor', () => {
     const baseUrl = 'http://localhost:5173'
-    const visited = new Set<string>()
+    const visitedUrls = new Set<string>()
     const queue: string[] = ['/']
     const accessibilityErrors: string[] = []
 
@@ -21,12 +21,12 @@ describe('Accessibility Audit: Combined Crawler with Auditor', () => {
             const currentPath = queue.shift()
             if (!currentPath) return
 
-            if (visited.has(removeTrailingSlash(currentPath))) {
+            if (visitedUrls.has(removeTrailingSlash(currentPath))) {
                 processQueue()
                 return
             }
 
-            visited.add(removeTrailingSlash(currentPath))
+            visitedUrls.add(removeTrailingSlash(currentPath))
             const fullUrl = currentPath.startsWith('http')
                 ? currentPath
                 : baseUrl + currentPath
@@ -41,7 +41,7 @@ describe('Accessibility Audit: Combined Crawler with Auditor', () => {
                         ] = getSubPages(baseUrl, link, queue)
 
                         if (
-                            !visited.has(normalizedPathOnly) &&
+                            !visitedUrls.has(normalizedPathOnly) &&
                             !isPathPlanned
                         ) {
                             queue.push(fullPathAndQuery)

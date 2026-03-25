@@ -6,14 +6,14 @@ import { removeTrailingSlash } from '../support/full-accessibility-report/url-he
 
 describe('Crawler: Discovery Phase', () => {
     const baseUrl = 'http://localhost:5173'
-    const visited = new Set<string>()
+    const visitedUrls = new Set<string>()
     const queue: string[] = ['/']
 
     it('finds all pages and saves them to sitemap.json', () => {
         const processQueue = () => {
             if (!queue.length) {
                 cy.writeFile('cypress/fixtures/sitemap.json', {
-                    urls: Array.from(visited),
+                    urls: Array.from(visitedUrls),
                     generatedAt: new Date().toISOString(),
                 })
                 return
@@ -22,12 +22,12 @@ describe('Crawler: Discovery Phase', () => {
             const currentPath = queue.shift()
             if (!currentPath) return
 
-            if (visited.has(removeTrailingSlash(currentPath))) {
+            if (visitedUrls.has(removeTrailingSlash(currentPath))) {
                 processQueue()
                 return
             }
 
-            visited.add(removeTrailingSlash(currentPath))
+            visitedUrls.add(removeTrailingSlash(currentPath))
             const fullUrl = currentPath.startsWith('http')
                 ? currentPath
                 : baseUrl + currentPath
@@ -42,7 +42,7 @@ describe('Crawler: Discovery Phase', () => {
                         ] = getSubPages(baseUrl, link, queue)
 
                         if (
-                            !visited.has(normalizedPathOnly) &&
+                            !visitedUrls.has(normalizedPathOnly) &&
                             !isPathPlanned
                         ) {
                             queue.push(fullPathAndQuery)
