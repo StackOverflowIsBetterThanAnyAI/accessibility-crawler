@@ -39,7 +39,9 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
             })
 
             cy.then(() => {
-                const errorMessage = accessibilityErrors.join('\n')
+                const errorMessage = accessibilityErrors.join(
+                    '\n\n--------------------------------------------------------\n\n'
+                )
                 expect(
                     accessibilityErrors.length,
                     `Found ${accessibilityErrors.length} issues:\n${errorMessage}`
