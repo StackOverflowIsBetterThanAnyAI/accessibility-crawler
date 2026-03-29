@@ -27,9 +27,17 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
                         .map((tag) => formatWCAGTag(tag))
                         .join(', ') || 'no WCAG reference'
 
+                const affectedElements = violation.nodes
+                    .map(
+                        (node) =>
+                            `\n\nElement: ${node.html}\n${node.failureSummary?.replace(/\n\s/g, '\n->')}`
+                    )
+                    .join('\n')
+
                 const message =
-                    `[${currentPath}] 🚨 AXE: ${violation.id} [${tags}] (${violation.impact} / ${nodes} element${nodes !== 1 ? 's' : ''}) - ${violation.help}` +
-                    ` - Help: ${violation.helpUrl}`
+                    `on [${currentPath}]: ${violation.id} [${tags}] (${violation.impact} issue / ${nodes} element${nodes !== 1 ? 's' : ''} affected): ${violation.help}.` +
+                    `${affectedElements}\n` +
+                    `\nHelp: ${violation.helpUrl}`
                 errorList.push(message)
             })
         },
