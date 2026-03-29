@@ -44,7 +44,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
                 )
                 expect(
                     accessibilityErrors.length,
-                    `Found ${accessibilityErrors.length} issues:\n${errorMessage}`
+                    `Found ${accessibilityErrors.length} issues:\n${errorMessage}\n\n`
                 ).to.equal(0)
             })
         }
