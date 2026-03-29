@@ -35,7 +35,7 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
                     .join('\n')
 
                 const message =
-                    `on [${currentPath}]: ${violation.id} [${tags}] (${violation.impact} issue / ${nodes} element${nodes !== 1 ? 's' : ''} affected): ${violation.help}.` +
+                    `on [${currentPath}]: ${violation.id} [${tags}] (${violation.impact} severity / ${nodes} element${nodes !== 1 ? 's' : ''} affected): ${violation.help}.` +
                     `${affectedElements}\n` +
                     `\nHelp: ${violation.helpUrl}`
                 errorList.push(message)
