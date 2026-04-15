@@ -30,12 +30,12 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
                 const affectedElements = violation.nodes
                     .map(
                         (node) =>
-                            `\n\nElement: ${node.html}\n${node.failureSummary?.replace(/\n\s/g, '\n->')}`
+                            `\n\nElement: ${node.html}\n${node.failureSummary?.replace(/\n\s/g, '\n•')}`
                     )
                     .join('\n')
 
                 const message =
-                    `on [${currentPath}]: ${violation.id} [${tags}] (${violation.impact} severity / ${nodes} element${nodes !== 1 ? 's' : ''} affected): ${violation.help}.` +
+                    `on [${currentPath}]: [${tags}] (${violation.impact} severity / ${nodes} element${nodes !== 1 ? 's' : ''} affected): ${violation.help}.` +
                     `${affectedElements}\n` +
                     `\nHelp: ${violation.helpUrl}`
                 errorList.push(message)
@@ -50,10 +50,8 @@ const checkManualButtons = (currentPath: string, errorList: string[]) => {
     cy.get('body').then((body) => {
         const buttons = body.find('button')
         if (buttons.length === 0) {
-            errorList.push(`[${currentPath}] 🔍 CHECK: No buttons were found!`)
-        } else {
-            cy.log(
-                `✅ CHECK: ${buttons.length} button${buttons.length !== 1 ? 's' : ''} were found.`
+            errorList.push(
+                `on [${currentPath}]: [WCAG 1.2 AAA Success Criterion 3.4.5] (serious severity / 1 element affected): No buttons found on the page.`
             )
         }
     })
