@@ -23,8 +23,8 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
                 const nodes = violation.nodes.length
                 const tags =
                     violation.tags
-                        .filter((tag) => /^wcag/i.test(tag))
-                        .map((tag) => formatWCAGTag(tag))
+                .filter((tag: string) => /^wcag/i.test(tag))
+                .map((tag: string) => formatWCAGTag(tag))
                         .join(', ') || 'no WCAG reference'
 
                 const affectedElements = violation.nodes
