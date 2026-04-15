@@ -29,7 +29,7 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
 
                 const affectedElements = violation.nodes
                     .map(
-                        (node) =>
+                (node: any) =>
                             `\n\nElement: ${node.html}\n${node.failureSummary?.replace(/\n\s/g, '\n•')}`
                     )
                     .join('\n')
