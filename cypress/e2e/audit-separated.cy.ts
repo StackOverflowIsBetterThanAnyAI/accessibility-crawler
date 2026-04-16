@@ -8,7 +8,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         sitemap = require('../fixtures/sitemap.json')
     } catch (_error) {
         it('Error: Sitemap not found', () => {
-            throw new Error('Please execute crawler-discovery.cy.ts first!')
+            throw new Error('Please execute crawler-separated.cy.ts first!')
         })
         sitemap = { urls: [] }
     }
