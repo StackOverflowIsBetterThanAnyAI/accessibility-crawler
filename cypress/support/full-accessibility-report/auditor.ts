@@ -1,5 +1,28 @@
 import { formatWCAGTag } from './format-wcag-tag'
 
+const createCustomViolation = (
+    id: string,
+    help: string,
+    helpUrl: string,
+    impact: 'serious' | 'critical' | 'moderate',
+    html: string,
+    tags: ('wcag2a' | 'wcag2aa' | 'wcag21a' | 'wcag21aa' | 'wcag22aa')[]
+) => {
+    return {
+        id,
+        impact,
+        help,
+        helpUrl,
+        nodes: [
+            {
+                html,
+                failureSummary: `Fix any of the following:\n• The page must contain at least one ${id}`,
+            },
+        ],
+        tags,
+    }
+}
+
 export const runAxeAudit = (currentPath: string, errorList: string[]) => {
     cy.injectAxe()
 
@@ -19,6 +42,21 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
             includedImpacts: ['critical', 'serious', 'moderate'],
         },
         (violations) => {
+            processViolations(currentPath, violations, errorList)
+        },
+        true
+    )
+
+    checkManualButtons((manualViolations) => {
+        processViolations(currentPath, manualViolations, errorList)
+    })
+}
+
+const processViolations = (
+    currentPath: string,
+    violations: any[],
+    errorList: string[]
+) => {
             violations.forEach((violation) => {
                 const nodes = violation.nodes.length
                 const tags =
@@ -46,13 +84,19 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
     checkManualButtons(currentPath, errorList)
 }
 
-const checkManualButtons = (currentPath: string, errorList: string[]) => {
+const checkManualButtons = (callback: (violations: any[]) => void) => {
     cy.get('body').then((body) => {
         const buttons = body.find('button')
         if (buttons.length === 0) {
-            errorList.push(
-                `on [${currentPath}]: [WCAG 1.2 AAA Success Criterion 3.4.5] (serious severity / 1 element affected): No buttons found on the page.`
+            const manualViolation = createCustomViolation(
+                'Placeholder - - - button',
+                'Placeholder - - - Page must have at least one button',
+                'Placeholder - - - https://www.w3.org/',
+                'serious',
+                'Placeholder - - - <body>',
+                ['wcag2aa']
             )
+            callback([manualViolation])
         }
     })
 }
