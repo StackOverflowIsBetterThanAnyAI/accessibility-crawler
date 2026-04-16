@@ -24,12 +24,14 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
     })
 
     it('🏁 ACCESSIBILITY REPORT SUMMARY', () => {
+        const totalIssues = accessibilityErrors.length
+
         cy.log('----------------------------')
         cy.log(`Amount of checked pages: ${sitemap.urls.length}`)
-        cy.log(`Total errors found: ${accessibilityErrors.length}`)
+        cy.log(`Total errors found: ${totalIssues}`)
         cy.log('----------------------------')
 
-        if (accessibilityErrors.length === 0) {
+        if (totalIssues === 0) {
             cy.log(
                 '✅ All subpages passed the accessibility audit without any issues!'
             )
@@ -43,8 +45,8 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
                     '\n\n--------------------------------------------------------\n\n'
                 )
                 expect(
-                    accessibilityErrors.length,
-                    `Found ${accessibilityErrors.length} issues:\n${errorMessage}\n\n`
+                    totalIssues,
+                    `Found ${totalIssues} issues:\n${errorMessage}\n\n`
                 ).to.equal(0)
             })
         }
