@@ -23,7 +23,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         })
     })
 
-    it('🏁 ACCESSIBILITY REPORT SUMMARY', () => {
+    it('--- Accessibility Report Summary ---', () => {
         const totalIssues = accessibilityErrors.length
 
         cy.log('----------------------------')
@@ -33,11 +33,14 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
 
         if (totalIssues === 0) {
             cy.log(
-                '✅ All subpages passed the accessibility audit without any issues!'
+                'All subpages passed the accessibility audit without any issues.'
+            )
+            cy.log(
+                'Keep in mind that there may be other accessibility issues not covered by this audit.'
             )
         } else {
             accessibilityErrors.forEach((error, index) => {
-                cy.log(`❌ ${index + 1}. ${error}`)
+                cy.log(`${index + 1}. ${error}`)
             })
 
             cy.then(() => {
