@@ -3,7 +3,8 @@
         "target": "ESNext",
         "lib": ["ESNext", "dom"],
         "types": ["cypress", "node", "jquery", "cypress-axe"],
-        "moduleResolution": "node",
+        "module": "es2015",
+        "moduleResolution": "bundler",
         "strict": true,
         "skipLibCheck": true,
         "isolatedModules": true
