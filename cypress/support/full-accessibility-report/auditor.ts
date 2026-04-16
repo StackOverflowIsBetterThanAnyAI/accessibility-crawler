@@ -57,31 +57,30 @@ const processViolations = (
     violations: any[],
     errorList: string[]
 ) => {
-            violations.forEach((violation) => {
-                const nodes = violation.nodes.length
-                const tags =
-                    violation.tags
+    violations.forEach((violation) => {
+        const nodes = violation.nodes.length
+        const tags =
+            violation.tags
                 .filter((tag: string) => /^wcag/i.test(tag))
                 .map((tag: string) => formatWCAGTag(tag))
-                        .join(', ') || 'no WCAG reference'
+                .join(', ') || 'no WCAG reference'
 
-                const affectedElements = violation.nodes
-                    .map(
+        const affectedElements = violation.nodes
+            .map(
                 (node: any) =>
-                            `\n\nElement: ${node.html}\n${node.failureSummary?.replace(/\n\s/g, '\n•')}`
-                    )
-                    .join('\n')
+                    `\n\nElement: ${node.html}\n${node.failureSummary?.replace(/\n\s/g, '\n•')}`
+            )
+            .join('\n')
 
-                const message =
-                    `on [${currentPath}]: [${tags}] (${violation.impact} severity / ${nodes} element${nodes !== 1 ? 's' : ''} affected): ${violation.help}.` +
-                    `${affectedElements}\n` +
-                    `\nHelp: ${violation.helpUrl}`
-                errorList.push(message)
-            })
-        },
-        false // test does not fail on accessibility violations
-    )
-    checkManualButtons(currentPath, errorList)
+        const message =
+            `on [${currentPath}]: [${tags}] (${violation.impact} severity / ${nodes} element${nodes !== 1 ? 's' : ''} affected): ${violation.help}.` +
+            `${affectedElements}\n` +
+            `\nHelp: ${violation.helpUrl}`
+
+        cy.log(`❌ A11y Issue: ${violation.help}`)
+
+        errorList.push(message)
+    })
 }
 
 const checkManualButtons = (callback: (violations: any[]) => void) => {
