@@ -58,7 +58,7 @@ export const processViolations = (
 
         violation.nodes.forEach((node: any) => {
             const message =
-                `on [${currentPath}]: [${tagString}] (${violation.impact} severity):\n` +
+                `issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
                 `${violation.help}.\n\n` +
                 `Element: ${node.html}\n\n` +
                 `${node.failureSummary?.replace(/\n\s/g, '\n•')}\n\n` +
