@@ -1,22 +1,26 @@
 import { formatWCAGTag } from './format-wcag-tag'
 
 const createCustomViolation = (
-    id: string,
+    description: string,
     help: string,
     helpUrl: string,
-    impact: 'serious' | 'critical' | 'moderate',
     html: string,
+    id: string,
+    impact: 'serious' | 'critical' | 'moderate',
     tags: ('wcag2a' | 'wcag2aa' | 'wcag21a' | 'wcag21aa' | 'wcag22aa')[]
 ) => {
     return {
         id,
         impact,
+        description,
         help,
         helpUrl,
         nodes: [
             {
-                html,
                 failureSummary: `Fix any of the following:\n• The page must contain at least one ${id}`,
+                html,
+                impact,
+                target: [html],
             },
         ],
         tags,
@@ -58,8 +62,24 @@ const processViolations = (
     errorList: string[]
 ) => {
     violations.forEach((violation) => {
-        const nodes = violation.nodes.length
-        const tags =
+        const nodesCount = violation.nodes.length
+
+        Cypress.log({
+            displayName: 'a11y error!',
+            message: `${violation.id} on ${nodesCount} Node${nodesCount !== 1 ? 's' : ''}`,
+            consoleProps: () => ({
+                Command: 'ally error!',
+                Id: violation.id,
+                Impact: violation.impact,
+                Tags: violation.tags,
+                Description: violation.description,
+                Help: violation.help,
+                Helpurl: violation.helpUrl,
+                Nodes: violation.nodes,
+            }),
+        })
+
+        const tagString =
             violation.tags
                 .filter((tag: string) => /^wcag/i.test(tag))
                 .map((tag: string) => formatWCAGTag(tag))
@@ -73,11 +93,9 @@ const processViolations = (
             .join('\n')
 
         const message =
-            `on [${currentPath}]: [${tags}] (${violation.impact} severity / ${nodes} element${nodes !== 1 ? 's' : ''} affected): ${violation.help}.` +
+            `on [${currentPath}]: [${tagString}] (${violation.impact} severity / ${nodesCount} element${nodesCount !== 1 ? 's' : ''} affected): ${violation.help}.` +
             `${affectedElements}\n` +
             `\nHelp: ${violation.helpUrl}`
-
-        cy.log(`❌ A11y Issue: ${violation.help}`)
 
         errorList.push(message)
     })
@@ -88,11 +106,12 @@ const checkManualButtons = (callback: (violations: any[]) => void) => {
         const buttons = body.find('button')
         if (buttons.length === 0) {
             const manualViolation = createCustomViolation(
-                'Placeholder - - - button',
-                'Placeholder - - - Page must have at least one button',
-                'Placeholder - - - https://www.w3.org/',
-                'serious',
+                'Description: Page must have at least one button',
+                'Help: Page must have at least one button',
+                'Placeholder - - - https://www.w3.org/WAI/WCAG21/Understanding/content-on-hover-or-focus.html',
                 'Placeholder - - - <body>',
+                'manual-button-check',
+                'serious',
                 ['wcag2aa']
             )
             callback([manualViolation])
