@@ -56,18 +56,15 @@ export const processViolations = (
                 .map((tag: string) => formatWCAGTag(tag))
                 .join(', ') || 'no WCAG reference'
 
-        const affectedElements = violation.nodes
-            .map(
-                (node: any) =>
-                    `\n\nElement: ${node.html}\n${node.failureSummary?.replace(/\n\s/g, '\n•')}`
-            )
-            .join('\n')
+        violation.nodes.forEach((node: any) => {
+            const message =
+                `on [${currentPath}]: [${tagString}] (${violation.impact} severity):\n` +
+                `${violation.help}.\n\n` +
+                `Element: ${node.html}\n\n` +
+                `${node.failureSummary?.replace(/\n\s/g, '\n•')}\n\n` +
+                `Help: ${violation.helpUrl}`
 
-        const message =
-            `on [${currentPath}]: [${tagString}] (${violation.impact} severity / ${nodesCount} element${nodesCount !== 1 ? 's' : ''} affected): ${violation.help}.` +
-            `${affectedElements}\n` +
-            `\nHelp: ${violation.helpUrl}`
-
-        errorList.push(message)
+            errorList.push(message)
+        })
     })
 }
