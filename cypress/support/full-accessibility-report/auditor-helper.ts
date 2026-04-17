@@ -2,6 +2,7 @@ import { formatWCAGTag } from './format-wcag-tag'
 
 export const createCustomViolation = (
     description: string,
+    failureSummary: string[],
     help: string,
     helpUrl: string,
     html: string,
@@ -17,7 +18,7 @@ export const createCustomViolation = (
         helpUrl,
         nodes: [
             {
-                failureSummary: `Fix any of the following:\n• The page must contain at least one ${id}`,
+                failureSummary: `Fix any of the following:\n• ${failureSummary.join('\n• ')}`,
                 html,
                 impact,
                 target: [html],

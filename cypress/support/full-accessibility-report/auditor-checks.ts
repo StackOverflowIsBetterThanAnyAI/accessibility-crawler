@@ -6,6 +6,7 @@ export const checkManualButtons = (callback: (violations: any[]) => void) => {
         if (buttons.length === 0) {
             const manualViolation = createCustomViolation(
                 'Description: Page must have at least one button',
+                ['The page must contain at least one button', 'Add one button'],
                 'Help: Page must have at least one button',
                 'Placeholder - - - https://www.w3.org/WAI/WCAG21/Understanding/content-on-hover-or-focus.html',
                 'Placeholder - - - <body>',
