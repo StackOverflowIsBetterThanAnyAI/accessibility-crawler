@@ -1,9 +1,10 @@
-import { checkManualButtons } from './auditor-checks'
+import * as AdditionalChecks from './auditor-checks'
 import { processViolations } from './auditor-helper'
 
 export const runAxeAudit = (currentPath: string, errorList: string[]) => {
     cy.injectAxe()
 
+    // axe-core checks
     cy.checkA11y(
         undefined,
         {
@@ -25,7 +26,12 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
         true
     )
 
-    checkManualButtons((manualViolations) => {
-        processViolations(currentPath, manualViolations, errorList)
+    // custom checks for issues that axe-core doesn't cover
+    Object.values(AdditionalChecks).forEach((checkFunction) => {
+        if (typeof checkFunction === 'function') {
+            checkFunction((violations) => {
+                processViolations(currentPath, violations, errorList)
+            })
+        }
     })
 }
