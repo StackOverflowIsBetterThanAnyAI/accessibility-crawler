@@ -68,7 +68,6 @@ const DeepSecret = () => (
 
 const Shop = () => {
     const [searchParams] = useSearchParams()
-    // Aktuelle Seite aus der URL holen, Standard ist 1
     const currentPage = parseInt(searchParams.get('page') || '1', 10)
     const totalPages = 5
 
