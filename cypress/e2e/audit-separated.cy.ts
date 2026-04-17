@@ -2,7 +2,11 @@ import { runAxeAudit } from '../support/full-accessibility-report/auditor'
 import { addLeadingSlash } from '../support/full-accessibility-report/url-helper'
 
 describe('Accessibility Audit: Separated Crawler from Auditor', () => {
-    const baseUrl = 'http://localhost:5173'
+    const baseUrl = Cypress.config('baseUrl')
+    if (!baseUrl) {
+        throw new Error('baseUrl is not defined. Please check your config.')
+    }
+
     let sitemap: { urls: string[] }
 
     try {

@@ -5,7 +5,11 @@ import {
 import { removeTrailingSlash } from '../support/full-accessibility-report/url-helper'
 
 describe('Crawler: Discovery Phase', () => {
-    const baseUrl = 'http://localhost:5173'
+    const baseUrl = Cypress.config('baseUrl')
+    if (!baseUrl) {
+        throw new Error('baseUrl is not defined. Please check your config.')
+    }
+
     const visitedUrls = new Set<string>()
     const queue: string[] = ['/']
 
