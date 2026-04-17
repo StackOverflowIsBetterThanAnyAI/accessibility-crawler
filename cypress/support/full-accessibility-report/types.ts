@@ -28,3 +28,7 @@ export type CustomViolationReturnType = {
     ]
     tags: TagType[]
 }
+
+export type CustomAuditCallback = (
+    violations: CustomViolationReturnType[]
+) => void
