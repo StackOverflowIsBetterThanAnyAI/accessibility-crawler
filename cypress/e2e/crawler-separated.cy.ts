@@ -22,12 +22,14 @@ describe('Crawler: Discovery Phase', () => {
             const currentPath = queue.shift()
             if (!currentPath) return
 
-            if (visitedUrls.has(removeTrailingSlash(currentPath))) {
+            const normalizedPath = removeTrailingSlash(currentPath)
+
+            if (visitedUrls.has(normalizedPath)) {
                 processQueue()
                 return
             }
 
-            visitedUrls.add(removeTrailingSlash(currentPath))
+            visitedUrls.add(normalizedPath)
             const fullUrl = currentPath.startsWith('http')
                 ? currentPath
                 : baseUrl + currentPath
@@ -36,16 +38,16 @@ describe('Crawler: Discovery Phase', () => {
                 getInternalLinks(baseUrl).then((newLinks) => {
                     newLinks.forEach((link) => {
                         const [
-                            fullPathAndQuery,
-                            isPathPlanned,
-                            normalizedPathOnly,
+                            fullPathWithQuery,
+                            isPathInQueue,
+                            normalizedPath,
                         ] = getSubPages(baseUrl, link, queue)
 
                         if (
-                            !visitedUrls.has(normalizedPathOnly) &&
-                            !isPathPlanned
+                            !visitedUrls.has(normalizedPath) &&
+                            !isPathInQueue
                         ) {
-                            queue.push(fullPathAndQuery)
+                            queue.push(fullPathWithQuery)
                         }
                     })
 
