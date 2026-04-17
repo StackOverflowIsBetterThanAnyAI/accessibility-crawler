@@ -1,21 +1,14 @@
+import axe from 'axe-core'
 import { formatWCAGTag } from './format-wcag-tag'
+import { CustomViolationReturnType, CustomViolationType } from './types'
 
 export const createCustomViolation = (
-    description: string,
-    failureSummary: string[],
-    help: string,
-    helpUrl: string,
-    html: string,
-    id: string,
-    impact: 'serious' | 'critical' | 'moderate',
-    tags: ('wcag2a' | 'wcag2aa' | 'wcag21a' | 'wcag21aa' | 'wcag22aa')[]
-) => {
+    data: CustomViolationType
+): CustomViolationReturnType => {
+    const { failureSummary, html, impact, ...rest } = data
     return {
-        id,
+        ...rest,
         impact,
-        description,
-        help,
-        helpUrl,
         nodes: [
             {
                 failureSummary: `Fix any of the following:\n• ${failureSummary.join('\n• ')}`,
@@ -24,13 +17,12 @@ export const createCustomViolation = (
                 target: [html],
             },
         ],
-        tags,
     }
 }
 
 export const processViolations = (
     currentPath: string,
-    violations: any[],
+    violations: (CustomViolationReturnType | axe.Result)[],
     errorList: string[]
 ) => {
     violations.forEach((violation) => {
