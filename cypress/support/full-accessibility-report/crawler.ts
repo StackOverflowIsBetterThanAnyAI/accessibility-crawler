@@ -2,55 +2,55 @@ import { addLeadingSlash, removeTrailingSlash } from './url-helper'
 
 export const getInternalLinks = (baseUrl: string) => {
     return cy.get('a').then((links: JQuery<HTMLAnchorElement>) => {
-        const hrefs = links
+        const rawUrls: string[] = links
             .map((_: number, el: HTMLAnchorElement) => el.href)
             .get()
 
-        const internal = hrefs
+        const baseOrigin = new URL(baseUrl).origin
+
+        const filteredUrls: string[] = rawUrls
             .filter((link) => {
                 try {
                     const url = new URL(link)
 
-                    const isInternal = url.origin === new URL(baseUrl).origin
+                    const isInternal = url.origin === baseOrigin
                     const isWebProtocol = url.protocol.startsWith('http')
 
                     if (!isInternal || !isWebProtocol) return null
 
                     // remove hash for consistent crawling
                     url.hash = ''
-                    const cleanLink = url.href
 
                     // ignore links that point to files
                     const path = url.pathname
                     const lastSegment = path.split('/').pop() || ''
-                    const isNotFile = !lastSegment.includes('.')
+                    if (lastSegment.includes('.')) return null
 
-                    return isNotFile ? cleanLink : null
+                    return url.href
                 } catch (_error) {
                     return null
                 }
             })
             .filter((link): link is string => link !== null)
 
-        return [...new Set(internal)]
+        return [...new Set(filteredUrls)]
     })
 }
 
 export const getSubPages = (baseUrl: string, link: string, queue: string[]) => {
     const urlObj = new URL(link)
-    const pathOnly = urlObj.pathname
-    const fullPathAndQuery = urlObj.pathname + urlObj.search
 
-    const normalizedPathOnly = removeTrailingSlash(pathOnly)
+    const path = urlObj.pathname
+    const fullPathWithQuery = urlObj.pathname + urlObj.search
+    const normalizedPath = removeTrailingSlash(path)
 
     // ignore paths where only query parameters differ
-    const isPathPlanned = queue.some((queuedPath) => {
-        const queuedPathOnly = new URL(baseUrl + addLeadingSlash(queuedPath))
-            .pathname
-        const normalizedQueued = removeTrailingSlash(queuedPathOnly)
+    const isPathInQueue = queue.some((queuedPath) => {
+        const queuedUrl = new URL(baseUrl + addLeadingSlash(queuedPath))
+        const normalizedQueuedPath = removeTrailingSlash(queuedUrl.pathname)
 
-        return normalizedQueued === normalizedPathOnly
+        return normalizedQueuedPath === normalizedPath
     })
 
-    return [fullPathAndQuery, isPathPlanned, normalizedPathOnly] as const
+    return [fullPathWithQuery, isPathInQueue, normalizedPath] as const
 }
