@@ -153,6 +153,7 @@ function App() {
                 }}
             >
                 <Link to="/">Home</Link>
+                <Link to="/four-oh-four">404</Link>
                 <Link to="/about/">About us</Link>
                 <Link to="/contact#form-anchor">Contact</Link>
                 <Link to="/shop">Shop</Link>
