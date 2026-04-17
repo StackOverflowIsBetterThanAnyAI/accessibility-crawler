@@ -54,7 +54,7 @@ export const processViolations = (
                 `issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
                 `${violation.help}.\n\n` +
                 `Element: ${node.html}\n\n` +
-                `${node.failureSummary?.replace(/\n\s/g, '\n•')}\n\n` +
+                `${node.failureSummary?.replace(/\n\s(?!Fix)/g, '\n•')}\n\n` +
                 `Help: ${violation.helpUrl}`
 
             errorList.push(message)
