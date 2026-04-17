@@ -1,4 +1,5 @@
 import { runAxeAudit } from '../support/full-accessibility-report/auditor'
+import { addLeadingSlash } from '../support/full-accessibility-report/url-helper'
 
 describe('Accessibility Audit: Separated Crawler from Auditor', () => {
     const baseUrl = 'http://localhost:5173'
@@ -6,7 +7,12 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
 
     try {
         sitemap = require('../fixtures/sitemap.json')
-    } catch (_error) {
+        if (sitemap.urls.length === 0) {
+            it('Error: Sitemap is empty', () => {
+                throw new Error('Please execute crawler-separated.cy.ts!')
+            })
+        }
+    } catch {
         it('Error: Sitemap not found', () => {
             throw new Error('Please execute crawler-separated.cy.ts first!')
         })
@@ -17,7 +23,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
 
     sitemap.urls.forEach((path) => {
         it(`Check: ${path}`, () => {
-            const url = baseUrl + (path.startsWith('/') ? '' : '/') + path
+            const url = baseUrl + addLeadingSlash(path)
             cy.visit(url)
             runAxeAudit(path, accessibilityErrors)
         })
@@ -28,7 +34,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
 
         cy.log('----------------------------')
         cy.log(`Amount of checked pages: ${sitemap.urls.length}`)
-        cy.log(`Total errors found: ${totalIssues}`)
+        cy.log(`Total issues found: ${totalIssues}`)
         cy.log('----------------------------')
 
         if (totalIssues === 0) {
