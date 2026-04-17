@@ -1,5 +1,7 @@
+import axe from 'axe-core'
 import * as AdditionalChecks from './auditor-checks'
 import { processViolations } from './auditor-helper'
+import { CustomViolationReturnType } from './types'
 
 export const runAxeAudit = (currentPath: string, errorList: string[]) => {
     cy.injectAxe()
@@ -20,7 +22,7 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
             },
             includedImpacts: ['critical', 'serious', 'moderate'],
         },
-        (violations) => {
+        (violations: axe.Result[]) => {
             processViolations(currentPath, violations, errorList)
         },
         true
@@ -29,7 +31,7 @@ export const runAxeAudit = (currentPath: string, errorList: string[]) => {
     // custom checks for issues that axe-core doesn't cover
     Object.values(AdditionalChecks).forEach((checkFunction) => {
         if (typeof checkFunction === 'function') {
-            checkFunction((violations) => {
+            checkFunction((violations: CustomViolationReturnType[]) => {
                 processViolations(currentPath, violations, errorList)
             })
         }
