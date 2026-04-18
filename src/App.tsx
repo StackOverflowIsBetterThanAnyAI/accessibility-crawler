@@ -15,6 +15,12 @@ const Home = () => (
         <a href="/handbuch.pdf">Download PDF</a>
         <br />
         <a href="/image.png">View Image</a>
+        <br />
+        <img src="/image.png" alt="this is a placeholder" />
+        <br />
+        <img src="/image.png" alt="image123" />
+        <br />
+        <img src="/image.png" alt="background.jpg" />
     </div>
 )
 
