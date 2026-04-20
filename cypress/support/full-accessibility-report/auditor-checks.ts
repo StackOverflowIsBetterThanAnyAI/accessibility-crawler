@@ -52,7 +52,7 @@ export const checkBadAltTexts = (callback: CustomAuditCallback) => {
                         id: 'bad-alt-text',
                         impact: 'serious',
                         description: `The alt text "${altText}" looks like a filename or placeholder.`,
-                        help: 'Alternative text must be a meaningful replacement for the image content.',
+                        help: 'Alternative text must be a meaningful replacement for the image content',
                         helpUrl:
                             'https://www.w3.org/WAI/WCAG22/Techniques/failures/F30',
                         html: img.outerHTML,
@@ -61,11 +61,69 @@ export const checkBadAltTexts = (callback: CustomAuditCallback) => {
                             `Do not use filenames (like .jpg).`,
                             `Do not use generic words like "image" or "placeholder".`,
                         ],
-                        tags: ['wcag2a'],
+                        tags: ['wcag2a', 'wcag111'],
                     })
                 )
             }
         })
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
+
+export const checkVideoAccessibility = (callback: CustomAuditCallback) => {
+    cy.get('body').then((body) => {
+        const violations: CustomViolationReturnType[] = []
+        body.find('video').each((_, video) => {
+            const vid = Cypress.$(video)
+            const hasCaptions = vid.find('track[kind="captions"]').length > 0
+            const hasDescriptions =
+                vid.find('track[kind="descriptions"]').length > 0
+
+            if (!hasCaptions) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'video-missing-captions',
+                        impact: 'serious',
+                        description: 'Video is missing captions.',
+                        help: 'Deaf users need captions to understand the content',
+                        helpUrl:
+                            'https://www.w3.org/WAI/WCAG22/Techniques/html/H95',
+                        html: video.outerHTML,
+                        failureSummary: [
+                            'Provide a <track kind="captions"> element in the language of the video.',
+                        ],
+                        tags: ['wcag2a', 'wcag122'],
+                    })
+                )
+            }
+
+            if (!hasDescriptions) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'video-missing-descriptions',
+                        impact: 'moderate',
+                        description: 'Video is missing audio descriptions.',
+                        help: 'Blind users need audio descriptions to understand the visual content',
+                        helpUrl:
+                            'https://www.w3.org/WAI/WCAG22/Techniques/html/H96',
+                        html: video.outerHTML,
+                        failureSummary: [
+                            'Provide a <track kind="descriptions"> element in the language of the video.',
+                        ],
+                        tags: [
+                            'wcag2a',
+                            'wcag121',
+                            'wcag123',
+                            'wcag2aa',
+                            'wcag125',
+                        ],
+                    })
+                )
+            }
+        })
+
         if (violations.length) {
             callback(violations)
         }

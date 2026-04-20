@@ -21,6 +21,42 @@ const Home = () => (
         <img src="/image.png" alt="image123" />
         <br />
         <img src="/image.png" alt="background.jpg" />
+        <br />
+        <video
+            poster="https://assets.bundesliga.com/player/dfl-obj-0002f5-dfl-clu-00000g-dfl-sea-0001k9-body.png?crop=10,0,75,80&fit=260,260"
+            controls
+            width={260}
+        >
+            <source
+                src="https://raw.githubusercontent.com/bower-media-samples/big-buck-bunny-1080p-60fps-30s/master/video.mp4"
+                lang="en"
+                type="video/mp4"
+            />
+            <track
+                kind="captions"
+                label="English"
+                src="myvideo-en.vtt"
+                srcLang="en"
+            />
+        </video>
+        <br />
+        <video
+            poster="https://assets.bundesliga.com/player/dfl-obj-j00zz3-dfl-clu-00000g-dfl-sea-0001k9-body.png?crop=10,0,75,80&fit=260,260"
+            controls
+            width={260}
+        >
+            <source
+                src="https://raw.githubusercontent.com/bower-media-samples/big-buck-bunny-1080p-60fps-30s/master/video.mp4"
+                lang="en"
+                type="video/mp4"
+            />
+            <track
+                kind="descriptions"
+                label="English"
+                src="myvideo-en.vtt"
+                srcLang="en"
+            />
+        </video>
     </div>
 )
 
