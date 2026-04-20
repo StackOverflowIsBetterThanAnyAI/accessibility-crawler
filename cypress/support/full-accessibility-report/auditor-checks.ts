@@ -131,10 +131,45 @@ export const checkFieldsetLegend = (callback: CustomAuditCallback) => {
                             'The <legend> element must be the first child of the <fieldset>.',
                             'Only use one <legend> element per <fieldset>.',
                         ],
-                        tags: ['wcag131', 'wcag2a'],
+                        tags: ['wcag2a', 'wcag131'],
                     })
                 )
             }
+        })
+
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
+
+export const checkHeadingOrder = (callback: CustomAuditCallback) => {
+    cy.get('body').then((body) => {
+        const violations: CustomViolationReturnType[] = []
+        const headings = body.find('h1, h2, h3, h4, h5, h6')
+        let lastLevel = 0
+
+        headings.each((_, el) => {
+            const currentLevel = parseInt(el.tagName.substring(1))
+
+            if (currentLevel > lastLevel + 1 && lastLevel !== 0) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'heading-order-jump',
+                        impact: 'serious',
+                        description: `Heading level skipped: h${lastLevel} to h${currentLevel}`,
+                        help: 'Headings should follow a logical nested order',
+                        helpUrl:
+                            'https://www.w3.org/WAI/WCAG22/Techniques/general/G141',
+                        html: el.outerHTML,
+                        failureSummary: [
+                            `Do not skip heading levels. Expected <h${lastLevel + 1}> or higher.`,
+                        ],
+                        tags: ['wcag2a', 'wcag131'],
+                    })
+                )
+            }
+            lastLevel = currentLevel
         })
 
         if (violations.length) {
