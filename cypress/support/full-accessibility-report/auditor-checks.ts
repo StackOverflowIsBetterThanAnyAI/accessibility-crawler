@@ -147,23 +147,49 @@ export const checkHeadingOrder = (callback: CustomAuditCallback) => {
     cy.get('body').then((body) => {
         const violations: CustomViolationReturnType[] = []
         const headings = body.find('h1, h2, h3, h4, h5, h6')
-        let lastLevel = 0
 
+        if (headings.length === 0) {
+            return
+        }
+
+        const firstHeading = headings.first()
+        const firstLevel = parseInt(firstHeading[0].tagName.substring(1))
+
+        if (firstLevel !== 1) {
+            violations.push(
+                createCustomViolation({
+                    id: 'heading-order-no-h1',
+                    impact: 'serious',
+                    description:
+                        'The first heading on the page must be an <h1>.',
+                    help: 'A page should start with an <h1> to establish the main topic',
+                    helpUrl:
+                        'https://www.w3.org/WAI/WCAG22/Techniques/general/G141',
+                    html: firstHeading[0].outerHTML,
+                    failureSummary: [
+                        'Change this heading to an <h1> or add an <h1> element before it.',
+                    ],
+                    tags: ['wcag2a', 'wcag131'],
+                })
+            )
+        }
+
+        let lastLevel = 0
         headings.each((_, el) => {
             const currentLevel = parseInt(el.tagName.substring(1))
 
-            if (currentLevel > lastLevel + 1 && lastLevel !== 0) {
+            if (lastLevel !== 0 && currentLevel > lastLevel + 1) {
                 violations.push(
                     createCustomViolation({
                         id: 'heading-order-jump',
                         impact: 'serious',
-                        description: `Heading level skipped: h${lastLevel} to h${currentLevel}`,
-                        help: 'Headings should follow a logical nested order',
+                        description: `Heading level skipped: <h${lastLevel}> to <h${currentLevel}>`,
+                        help: 'Headings must follow a logical order without skipping levels',
                         helpUrl:
                             'https://www.w3.org/WAI/WCAG22/Techniques/general/G141',
                         html: el.outerHTML,
                         failureSummary: [
-                            `Do not skip heading levels. Expected <h${lastLevel + 1}> or higher.`,
+                            `Change this heading to <h${lastLevel + 1}> or higher.`,
                         ],
                         tags: ['wcag2a', 'wcag131'],
                     })

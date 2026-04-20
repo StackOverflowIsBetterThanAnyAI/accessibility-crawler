@@ -73,6 +73,7 @@ const Home = () => (
 const About = () => (
     <div>
         <h1>About us</h1>
+        <h3>Only us</h3>
         <Link to="secret">Go to Secret Page</Link>
         <br />
         <button aria-label=""></button>
@@ -89,7 +90,7 @@ const About = () => (
 
 const Contact = () => (
     <div>
-        <h1>Contact</h1>
+        <h5>Contact</h5>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <a href="mailto:support@example.com">E-Mail</a>
             <a href="tel:+49123456789">Call us</a>
