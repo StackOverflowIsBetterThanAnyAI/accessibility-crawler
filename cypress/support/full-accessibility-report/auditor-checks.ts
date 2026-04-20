@@ -78,7 +78,9 @@ export const checkBadAltTexts = (callback: CustomAuditCallback) => {
     })
 }
 
-export const checkVideoAccessibility = (callback: CustomAuditCallback) => {
+export const checkVideoCaptionsAndDescriptions = (
+    callback: CustomAuditCallback
+) => {
     cy.get('body').then((body) => {
         const violations: CustomViolationReturnType[] = []
         body.find('video').each((_, video) => {
