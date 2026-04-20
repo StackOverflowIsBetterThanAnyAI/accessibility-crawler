@@ -118,13 +118,7 @@ export const checkVideoAccessibility = (callback: CustomAuditCallback) => {
                         failureSummary: [
                             'Provide a <track kind="descriptions"> element in the language of the video.',
                         ],
-                        tags: [
-                            'wcag2a',
-                            'wcag121',
-                            'wcag123',
-                            'wcag2aa',
-                            'wcag125',
-                        ],
+                        tags: ['wcag2aa', 'wcag125'],
                     })
                 )
             }
