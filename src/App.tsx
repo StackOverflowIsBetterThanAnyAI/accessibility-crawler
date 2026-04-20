@@ -42,6 +42,31 @@ const Home = () => (
                 srcLang="en"
             />
         </video>
+        <br />
+        <form action="/" method="post">
+            <fieldset>
+                <legend>Your Residential Address 2</legend>
+                <div>
+                    <label htmlFor="raddress">Address:</label>
+                    <input
+                        autoComplete="street-address"
+                        id="raddress"
+                        name="raddress"
+                        type="text"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="rzip">Postal/Zip Code:</label>
+                    <input
+                        autoComplete="postal-code"
+                        id="rzip"
+                        name="rzip"
+                        type="text"
+                    />
+                </div>
+                <legend>Your Residential Address 3</legend>
+            </fieldset>
+        </form>
     </div>
 )
 

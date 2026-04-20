@@ -54,10 +54,10 @@ export const checkVideoCaptionsAndDescriptions = (
     cy.get('body').then((body) => {
         const violations: CustomViolationReturnType[] = []
         body.find('video').each((_, video) => {
-            const vid = Cypress.$(video)
-            const hasCaptions = vid.find('track[kind="captions"]').length > 0
+            const $video = Cypress.$(video)
+            const hasCaptions = $video.find('track[kind="captions"]').length > 0
             const hasDescriptions =
-                vid.find('track[kind="descriptions"]').length > 0
+                $video.find('track[kind="descriptions"]').length > 0
 
             if (!hasCaptions) {
                 violations.push(
@@ -91,6 +91,47 @@ export const checkVideoCaptionsAndDescriptions = (
                             'Provide a <track kind="descriptions"> element in the language of the video.',
                         ],
                         tags: ['wcag2aa', 'wcag125'],
+                    })
+                )
+            }
+        })
+
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
+
+export const checkFieldsetLegend = (callback: CustomAuditCallback) => {
+    cy.get('body').then((body) => {
+        const violations: CustomViolationReturnType[] = []
+        body.find('fieldset').each((_, fieldset) => {
+            const $fieldset = Cypress.$(fieldset)
+            const legend = $fieldset.find('> legend')
+            const firstChild = $fieldset.children().first()
+
+            const hasMultipleLegends = legend.length > 1
+            const hasValidLegend =
+                legend.length > 0 && legend.text().trim().length > 0
+            const isLegendFirst = firstChild.is('legend')
+
+            if (!hasValidLegend || !isLegendFirst || hasMultipleLegends) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'fieldset-bad-legend',
+                        impact: 'serious',
+                        description:
+                            'Every <fieldset> must have one non-empty <legend> as its first child.',
+                        help: 'The <legend> element provides the necessary context for grouped form controls',
+                        helpUrl:
+                            'https://www.w3.org/WAI/WCAG22/Techniques/html/H71',
+                        html: fieldset.outerHTML,
+                        failureSummary: [
+                            'Add a <legend> element with a meaningful text inside the <fieldset>.',
+                            'The <legend> element must be the first child of the <fieldset>.',
+                            'Only use one <legend> element per <fieldset>.',
+                        ],
+                        tags: ['wcag131', 'wcag2a'],
                     })
                 )
             }
