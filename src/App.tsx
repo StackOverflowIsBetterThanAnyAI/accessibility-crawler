@@ -10,7 +10,6 @@ const Home = () => (
     <div>
         <h1>Home</h1>
         <p>Welcome</p>
-        <button>Placeholder</button>
         <br />
         <a href="/handbuch.pdf">Download PDF</a>
         <br />
@@ -50,8 +49,6 @@ const About = () => (
     <div>
         <h1>About us</h1>
         <Link to="secret">Go to Secret Page</Link>
-        <br />
-        <button aria-label=""></button>
         <br />
         <button aria-label=""></button>
         <br />
@@ -97,8 +94,6 @@ const DeepSecret = () => (
         <h1>Very Deep Page</h1>
         <p>Congratulations, you have reached the end of the path.</p>
         <Link to="/">Back to the Beginning</Link>
-        <br />
-        <button>Placeholder</button>
     </div>
 )
 
@@ -170,8 +165,6 @@ const ProductDetail = () => {
         <div>
             <h1>Product Detail Page</h1>
             <Link to="/shop">Back to Shop</Link>
-            <br />
-            <button>Placeholder</button>
         </div>
     )
 }
