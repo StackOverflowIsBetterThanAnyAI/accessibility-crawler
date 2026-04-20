@@ -37,6 +37,9 @@ export const checkBadAltTexts = (callback: CustomAuditCallback) => {
             /\.(jpg|jpeg|png|gif|tiff|raw|svg|webp|avif)$/i,
             /(graphic|picture|image|photo|icon)/i,
             /placeholder/i,
+            /^[0-9]+$/,
+            /^[^a-z0-9]+$/i,
+            /^.{1}$/,
         ]
         const violations: CustomViolationReturnType[] = []
 
@@ -60,6 +63,9 @@ export const checkBadAltTexts = (callback: CustomAuditCallback) => {
                             `Change the alt attribute to describe the purpose of the image.`,
                             `Do not use filenames (like .jpg).`,
                             `Do not use generic words like "image" or "placeholder".`,
+                            `Do not use only numbers.`,
+                            `Do not use only special characters or symbols.`,
+                            `Do not use only one character.`,
                         ],
                         tags: ['wcag2a', 'wcag111'],
                     })

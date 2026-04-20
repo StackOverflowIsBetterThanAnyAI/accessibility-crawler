@@ -16,17 +16,7 @@ const Home = () => (
         <br />
         <a href="/image.png">View Image</a>
         <br />
-        <img src="/image.png" alt="this is a placeholder" />
-        <br />
-        <img src="/image.png" alt="image123" />
-        <br />
-        <img src="/image.png" alt="background.jpg" />
-        <br />
-        <video
-            poster="https://assets.bundesliga.com/player/dfl-obj-0002f5-dfl-clu-00000g-dfl-sea-0001k9-body.png?crop=10,0,75,80&fit=260,260"
-            controls
-            width={260}
-        >
+        <video poster="image.png" controls width={260}>
             <source
                 src="https://raw.githubusercontent.com/bower-media-samples/big-buck-bunny-1080p-60fps-30s/master/video.mp4"
                 lang="en"
@@ -40,11 +30,7 @@ const Home = () => (
             />
         </video>
         <br />
-        <video
-            poster="https://assets.bundesliga.com/player/dfl-obj-j00zz3-dfl-clu-00000g-dfl-sea-0001k9-body.png?crop=10,0,75,80&fit=260,260"
-            controls
-            width={260}
-        >
+        <video poster="image.png" controls width={260}>
             <source
                 src="https://raw.githubusercontent.com/bower-media-samples/big-buck-bunny-1080p-60fps-30s/master/video.mp4"
                 lang="en"
@@ -68,6 +54,14 @@ const About = () => (
         <button aria-label=""></button>
         <br />
         <button aria-label=""></button>
+        <br />
+        <img src="image.png" width={60} alt="this is a placeholder" />
+        <img src="image.png" width={60} alt="image123" />
+        <img src="image.png" width={60} alt="background.jpg" />
+        <img src="image.png" width={60} alt="\._./" />
+        <img src="image.png" width={60} alt="1294081" />
+        <img src="image.png" width={60} alt="x" />
+        <img src="image.png" width={60} alt="Joshua Kimmich" />
     </div>
 )
 
