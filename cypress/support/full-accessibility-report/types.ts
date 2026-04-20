@@ -1,5 +1,11 @@
 type ImpactType = 'serious' | 'critical' | 'moderate'
-type TagType = 'wcag2a' | 'wcag2aa' | 'wcag21a' | 'wcag21aa' | 'wcag22aa'
+type TagType =
+    | 'wcag2a'
+    | 'wcag2aa'
+    | 'wcag21a'
+    | 'wcag21aa'
+    | 'wcag22aa'
+    | `wcag${number}`
 
 export type CustomViolationType = {
     description: string
