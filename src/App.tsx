@@ -5,6 +5,7 @@ import {
     Link,
     useSearchParams,
 } from 'react-router-dom'
+import './App.css'
 
 const Home = () => (
     <div>
@@ -108,8 +109,8 @@ const Contact = () => (
 )
 
 const Secret = () => (
-    <div>
-        <h1>Secret Page</h1>
+    <div className="background">
+        <h1 className="foreground">Secret Page</h1>
         <p>This page was found through the "About Us" section!</p>
         <Link to="/about/secret/deep">Go even deeper ...</Link>
     </div>
