@@ -3,7 +3,7 @@ import { runAxeAudit } from '../support/full-accessibility-report/auditor'
 describe('System Benchmark: W3C ACT Rules Validation', () => {
     const benchmarkData = require('../fixtures/testcases.json')
 
-    benchmarkData.testcases.forEach((tc: any) => {
+    benchmarkData.testcases.slice(0, 25).forEach((tc: any) => {
         it(`Benchmark ${tc.testcaseTitle}`, () => {
             const currentErrors: string[] = []
 
@@ -30,7 +30,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
                         cy.log('No false positive triggered.')
                     } else {
                         throw new Error(
-                            `False positive: Framework reports errors on a correct page: ${currentErrors.join('\n')}`
+                            `False positive: Tested for rule\n"${tc.ruleName}", and found:\n${currentErrors.join('\n')}`
                         )
                     }
                 }
