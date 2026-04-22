@@ -1,18 +1,23 @@
+import axe from 'axe-core'
 import { runAxeAudit } from '../support/full-accessibility-report/auditor'
 
 describe('System Benchmark: W3C ACT Rules Validation', () => {
     const benchmarkData = require('../fixtures/testcases.json')
+    const axeRules = axe.getRules()
+    console.log(axeRules)
 
-    benchmarkData.testcases.slice(0, 100).forEach((tc: any) => {
+    benchmarkData.testcases.slice(610, 650).forEach((tc: any) => {
         it(`Benchmark ${tc.testcaseTitle}`, () => {
-            const currentErrors: string[] = []
+            const errorList: string[] = []
 
             cy.visit(tc.url)
 
-            runAxeAudit(tc.url, currentErrors)
+            runAxeAudit(tc.url, errorList)
+
+            console.log(tc.ruleId)
 
             cy.then(() => {
-                const foundAnyIssue = currentErrors.length > 0
+                const foundAnyIssue = errorList.length > 0
 
                 if (tc.expected === 'failed') {
                     if (foundAnyIssue) {
@@ -30,7 +35,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
                         cy.log('No false positive triggered.')
                     } else {
                         throw new Error(
-                            `False positive: Tested for rule\n"${tc.ruleName}", and found:\n${currentErrors.join('\n')}`
+                            `False positive: Tested for rule\n"${tc.ruleName}", and found:\n${errorList.join('\n')}`
                         )
                     }
                 }
