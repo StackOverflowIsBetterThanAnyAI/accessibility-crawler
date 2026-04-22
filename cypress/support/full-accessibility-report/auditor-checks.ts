@@ -24,7 +24,7 @@ export const checkBadAltTexts = (callback: CustomAuditCallback) => {
                     createCustomViolation({
                         id: 'bad-alt-text',
                         impact: 'serious',
-                        description: `The alt text "${altText}" looks like a filename or placeholder.`,
+                        description: `The alt text "${altText}" looks like a filename or placeholder`,
                         help: 'Alternative text must be a meaningful replacement for the image content',
                         helpUrl:
                             'https://www.w3.org/WAI/WCAG22/Techniques/failures/F30',
@@ -64,7 +64,7 @@ export const checkVideoCaptionsAndDescriptions = (
                     createCustomViolation({
                         id: 'video-missing-captions',
                         impact: 'serious',
-                        description: 'Video is missing captions.',
+                        description: 'Video is missing captions',
                         help: 'Deaf users need captions to understand the content',
                         helpUrl:
                             'https://www.w3.org/WAI/WCAG22/Techniques/html/H95',
@@ -82,7 +82,7 @@ export const checkVideoCaptionsAndDescriptions = (
                     createCustomViolation({
                         id: 'video-missing-descriptions',
                         impact: 'moderate',
-                        description: 'Video is missing audio descriptions.',
+                        description: 'Video is missing audio descriptions',
                         help: 'Blind users need audio descriptions to understand the visual content',
                         helpUrl:
                             'https://www.w3.org/WAI/WCAG22/Techniques/html/H96',
@@ -121,7 +121,7 @@ export const checkFieldsetLegend = (callback: CustomAuditCallback) => {
                         id: 'fieldset-bad-legend',
                         impact: 'serious',
                         description:
-                            'Every <fieldset> must have one non-empty <legend> as its first child.',
+                            'Every <fieldset> must have one non-empty <legend> as its first child',
                         help: 'The <legend> element provides the necessary context for grouped form controls',
                         helpUrl:
                             'https://www.w3.org/WAI/WCAG22/Techniques/html/H71',
@@ -161,8 +161,8 @@ export const checkHeadingOrder = (callback: CustomAuditCallback) => {
                     id: 'heading-order-no-h1',
                     impact: 'serious',
                     description:
-                        'The first heading on the page must be an <h1>.',
-                    help: 'A page should start with an <h1> to establish the main topic',
+                        'The first heading on the page must be an <h1>',
+                    help: 'A page should start with an <h1>-level heading to establish the main topic',
                     helpUrl:
                         'https://www.w3.org/WAI/WCAG22/Techniques/general/G141',
                     html: firstHeading[0].outerHTML,
@@ -196,6 +196,62 @@ export const checkHeadingOrder = (callback: CustomAuditCallback) => {
                 )
             }
             lastLevel = currentLevel
+        })
+
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
+
+export const checkAdjacentLinks = (callback: CustomAuditCallback) => {
+    cy.get('body').then((body) => {
+        const violations: CustomViolationReturnType[] = []
+        const links = body.find('a[href]')
+
+        if (links.length < 2) {
+            return
+        }
+
+        links.each((index, el) => {
+            if (index >= links.length - 1) {
+                return
+            }
+
+            const currentLink = el as HTMLAnchorElement
+            const nextLink = links[index + 1] as HTMLAnchorElement
+
+            if (currentLink.href && currentLink.href === nextLink.href) {
+                const range = document.createRange()
+                range.setStartAfter(currentLink)
+                range.setEndBefore(nextLink)
+
+                const textBetween = range.toString().trim()
+
+                if (textBetween === '') {
+                    violations.push(
+                        createCustomViolation({
+                            id: 'adjacent-redundant-links',
+                            impact: 'serious',
+                            description:
+                                'Adjacent links to the same destination should be combined',
+                            help: 'Combining adjacent image and text links for the same resource improves navigation for screen reader users',
+                            helpUrl:
+                                'https://www.w3.org/WAI/WCAG22/Techniques/html/H2',
+                            html:
+                                currentLink.outerHTML +
+                                ' ... ' +
+                                nextLink.outerHTML,
+                            failureSummary: [
+                                'Combine these two adjacent links into a single <a> tag.',
+                                'Check that every <img> element contained within the <a> element has a null value set for its alt attribute.',
+                                'Check that the <a> element contains an <img> element that has either a null alt attribute value or a value that supplements the link text and describes the image.',
+                            ],
+                            tags: ['wcag2a', 'wcag111'],
+                        })
+                    )
+                }
+            }
         })
 
         if (violations.length) {

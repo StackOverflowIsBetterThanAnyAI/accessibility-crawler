@@ -14,6 +14,10 @@ const Home = () => (
         <br />
         <a href="/handbuch.pdf">Download PDF</a>
         <br />
+        <a href="/image.png">
+            <img src="image.png" width={60} alt="View Image" />
+        </a>
+        <br />
         <a href="/image.png">View Image</a>
         <br />
         <video poster="image.png" controls width={260}>
