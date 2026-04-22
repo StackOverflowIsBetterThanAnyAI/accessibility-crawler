@@ -3,7 +3,7 @@ import { runAxeAudit } from '../support/full-accessibility-report/auditor'
 describe('System Benchmark: W3C ACT Rules Validation', () => {
     const benchmarkData = require('../fixtures/testcases.json')
 
-    benchmarkData.testcases.slice(0, 25).forEach((tc: any) => {
+    benchmarkData.testcases.slice(0, 100).forEach((tc: any) => {
         it(`Benchmark ${tc.testcaseTitle}`, () => {
             const currentErrors: string[] = []
 
@@ -19,7 +19,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
                         cy.log('Issue found.')
                     } else {
                         throw new Error(
-                            `Error expected, but not found: ${tc.testcaseTitle}`
+                            `Error "${tc.ruleName}" expected, but not found: ${tc.testcaseTitle}`
                         )
                     }
                 } else if (
