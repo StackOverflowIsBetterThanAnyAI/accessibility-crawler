@@ -836,32 +836,6 @@
             "approved": true
         },
         {
-            "ruleId": "6a7281",
-            "ruleName": "ARIA state or property has valid value",
-            "ruleAccessibilityRequirements": {
-                "aria12:propcharacteristic_value": {
-                    "title": "ARIA 1.2, 6.2.4 Value (Characteristics of States and Properties)",
-                    "forConformance": true,
-                    "failed": "not satisfied",
-                    "passed": "satisfied",
-                    "inapplicable": "satisfied"
-                },
-                "wcag20:1.3.1": {
-                    "secondary": "This success criterion is **less strict** than this rule. This is because the rule does not ignore irrelevant ARIA properties. Some of the failed examples satisfy this success criterion."
-                },
-                "wcag20:4.1.2": {
-                    "secondary": "This success criterion is **less strict** than this rule. This is because the rule does not ignore irrelevant ARIA properties. Some of the failed examples satisfy this success criterion."
-                }
-            },
-            "expected": "inapplicable",
-            "testcaseId": "d5d5467bced8e0eb2174ee42184258634c03421b",
-            "testcaseTitle": "Inapplicable Example 4",
-            "relativePath": "testcases/6a7281/d5d5467bced8e0eb2174ee42184258634c03421b.xml",
-            "url": "https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/6a7281/d5d5467bced8e0eb2174ee42184258634c03421b.xml",
-            "rulePage": "https://www.w3.org/WAI/standards-guidelines/act/rules/6a7281/",
-            "approved": true
-        },
-        {
             "ruleId": "5f99a7",
             "ruleName": "ARIA attribute is defined in WAI-ARIA",
             "ruleAccessibilityRequirements": {
@@ -9644,32 +9618,6 @@
             "testcaseTitle": "Inapplicable Example 1",
             "relativePath": "testcases/b5c3f8/b584aa8aeb33814a0ecb63fd9ed4d97f2211f837.svg",
             "url": "https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/b5c3f8/b584aa8aeb33814a0ecb63fd9ed4d97f2211f837.svg",
-            "rulePage": "https://www.w3.org/WAI/standards-guidelines/act/rules/b5c3f8/proposed/"
-        },
-        {
-            "ruleId": "b5c3f8",
-            "isApproved": true,
-            "approved": true,
-            "ruleName": "HTML page has lang attribute",
-            "ruleAccessibilityRequirements": {
-                "wcag20:3.1.1": {
-                    "forConformance": true,
-                    "failed": "not satisfied",
-                    "passed": "further testing needed",
-                    "inapplicable": "further testing needed"
-                },
-                "wcag-technique:H57": {
-                    "forConformance": false,
-                    "failed": "not satisfied",
-                    "passed": "further testing needed",
-                    "inapplicable": "further testing needed"
-                }
-            },
-            "expected": "inapplicable",
-            "testcaseId": "58847c387d3b2cfa7e57c6ed613a8f31569cfd30",
-            "testcaseTitle": "Inapplicable Example 2",
-            "relativePath": "testcases/b5c3f8/58847c387d3b2cfa7e57c6ed613a8f31569cfd30.xml",
-            "url": "https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/b5c3f8/58847c387d3b2cfa7e57c6ed613a8f31569cfd30.xml",
             "rulePage": "https://www.w3.org/WAI/standards-guidelines/act/rules/b5c3f8/proposed/"
         },
         {
