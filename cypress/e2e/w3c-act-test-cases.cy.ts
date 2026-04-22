@@ -3,39 +3,59 @@ import { runAxeAudit } from '../support/full-accessibility-report/auditor'
 
 describe('System Benchmark: W3C ACT Rules Validation', () => {
     const benchmarkData = require('../fixtures/testcases.json')
-    const axeRules = axe.getRules()
-    console.log(axeRules)
 
-    benchmarkData.testcases.slice(610, 650).forEach((tc: any) => {
+    const actToAxeMap: Record<string, string> = {}
+    axe.getRules().forEach((rule) => {
+        if (rule?.actIds && Array.isArray(rule.actIds)) {
+            rule.actIds.forEach((id: string) => {
+                actToAxeMap[id] = rule.ruleId
+            })
+        }
+    })
+
+    benchmarkData.testcases.slice(0, 100).forEach((tc: any) => {
         it(`Benchmark ${tc.testcaseTitle}`, () => {
-            const errorList: string[] = []
+            const errorList: any[] = []
 
             cy.visit(tc.url)
 
             runAxeAudit(tc.url, errorList)
 
-            console.log(tc.ruleId)
-
             cy.then(() => {
-                const foundAnyIssue = errorList.length > 0
+                const targetAxeRuleId = actToAxeMap[tc.ruleId]
+                const targetIssueFound = errorList.some(
+                    (error) =>
+                        error.id === targetAxeRuleId ||
+                        error.includes?.(targetAxeRuleId)
+                )
+                const anyIssueFound = errorList.length > 0
 
                 if (tc.expected === 'failed') {
-                    if (foundAnyIssue) {
-                        cy.log('Issue found.')
+                    if (targetIssueFound) {
+                        cy.log(
+                            `Target rule "${targetAxeRuleId}" correctly detected.`
+                        )
+                    } else if (anyIssueFound) {
+                        throw new Error(
+                            `ACT Rule "${tc.ruleId}" (Axe: ${targetAxeRuleId}) expected, but other issues found: ${errorList.map((v) => v.id).join(', ')}`
+                        )
                     } else {
                         throw new Error(
-                            `Error "${tc.ruleName}" expected, but not found: ${tc.testcaseTitle}`
+                            `Target rule "${tc.ruleId}" not detected at all.`
                         )
                     }
                 } else if (
                     tc.expected === 'passed' ||
                     tc.expected === 'inapplicable'
                 ) {
-                    if (!foundAnyIssue) {
-                        cy.log('No false positive triggered.')
+                    if (!targetIssueFound) {
+                        cy.log('No false positive for target rule.')
+                        if (anyIssueFound) {
+                            cy.log('Other unrelated issues were found.')
+                        }
                     } else {
                         throw new Error(
-                            `False positive: Tested for rule\n"${tc.ruleName}", and found:\n${errorList.join('\n')}`
+                            `False positive: Rule "${targetAxeRuleId}" triggered.`
                         )
                     }
                 }
