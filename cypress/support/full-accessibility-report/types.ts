@@ -38,3 +38,24 @@ export type CustomViolationReturnType = {
 export type CustomAuditCallback = (
     violations: CustomViolationReturnType[]
 ) => void
+
+export type W3CActTestCaseType = {
+    ruleId: string
+    ruleName: string
+    ruleAccessibilityRequirements: {
+        [key: string]: {
+            title: string
+            forConformance: boolean
+            failed: string
+            passed: string
+            inapplicable: string
+        }
+    }
+    expected: string
+    testcaseId: string
+    testcaseTitle: string
+    relativePath: string
+    url: string
+    rulePage: string
+    approved: boolean
+}
