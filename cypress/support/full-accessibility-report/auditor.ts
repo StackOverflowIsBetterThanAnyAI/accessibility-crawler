@@ -3,7 +3,10 @@ import * as AdditionalChecks from './auditor-checks'
 import { processViolations } from './auditor-helper'
 import { CustomViolationReturnType } from './types'
 
-export const runAxeAudit = (currentPath: string, errorList: string[]) => {
+export const runAxeAudit = (
+    currentPath: string,
+    errorList: { id: string; message: string }[]
+) => {
     cy.injectAxe()
 
     // axe-core checks

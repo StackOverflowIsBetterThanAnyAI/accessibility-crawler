@@ -23,7 +23,7 @@ export const createCustomViolation = (
 export const processViolations = (
     currentPath: string,
     violations: (CustomViolationReturnType | axe.Result)[],
-    errorList: string[]
+    errorList: { id: string; message: string }[]
 ) => {
     violations.forEach((violation) => {
         const nodesCount = violation.nodes.length
@@ -50,14 +50,17 @@ export const processViolations = (
                 .join(', ') || 'no WCAG reference'
 
         violation.nodes.forEach((node: any) => {
-            const message =
+            const formattedMessage =
                 `issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
                 `${violation.help}.\n\n` +
                 `Element: ${node.html}\n\n` +
                 `${node.failureSummary?.replace(/\n\s(?!Fix)/g, '\n•')}\n\n` +
                 `Help: ${violation.helpUrl}`
 
-            errorList.push(message)
+            errorList.push({
+                id: violation.id,
+                message: formattedMessage,
+            })
         })
     })
 }

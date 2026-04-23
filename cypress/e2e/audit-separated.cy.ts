@@ -23,7 +23,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         sitemap = { urls: [] }
     }
 
-    const accessibilityErrors: string[] = []
+    const accessibilityErrors: { id: string; message: string }[] = []
 
     sitemap.urls.forEach((path) => {
         it(`Check: ${path}`, () => {
@@ -50,13 +50,15 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
             )
         } else {
             accessibilityErrors.forEach((error, index) => {
-                cy.log(`${index + 1}. ${error}`)
+                cy.log(`${index + 1}. ${error.message}`)
             })
 
             cy.then(() => {
-                const errorMessage = accessibilityErrors.join(
-                    '\n\n--------------------------------------------------------\n\n'
-                )
+                const errorMessage = accessibilityErrors
+                    .map((err) => err.message)
+                    .join(
+                        '\n\n--------------------------------------------------------\n\n'
+                    )
                 expect(
                     totalIssues,
                     `Found ${totalIssues} issues:\n${errorMessage}\n\n`
