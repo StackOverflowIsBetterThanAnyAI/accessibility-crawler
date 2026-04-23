@@ -1,7 +1,7 @@
 import { createCustomViolation } from './auditor-helper'
 import { CustomAuditCallback, CustomViolationReturnType } from './types'
 
-export const checkBadAltTexts = (callback: CustomAuditCallback) => {
+export const checkBadAltTextImage = (callback: CustomAuditCallback) => {
     cy.get('body').then((body) => {
         const badAltPatterns = [
             /\.(jpg|jpeg|png|gif|tiff|raw|svg|webp|avif)$/i,
@@ -22,7 +22,7 @@ export const checkBadAltTexts = (callback: CustomAuditCallback) => {
             if (isBadAltText) {
                 violations.push(
                     createCustomViolation({
-                        id: 'bad-alt-text',
+                        id: 'bad-alt-image',
                         impact: 'serious',
                         description: `The alt text "${altText}" looks like a filename or placeholder`,
                         help: 'Alternative text must be a meaningful replacement for the image content',
@@ -42,6 +42,93 @@ export const checkBadAltTexts = (callback: CustomAuditCallback) => {
                 )
             }
         })
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
+
+export const checkAltTextInputImage = (callback: CustomAuditCallback) => {
+    cy.get('body').then((body) => {
+        const badAltPatterns = [
+            /\.(jpg|jpeg|png|gif|tiff|raw|svg|webp|avif)$/i,
+            /(graphic|picture|image|photo|icon)/i,
+            /placeholder/i,
+            /^[0-9]+$/,
+            /^[^a-z0-9]+$/i,
+            /^.{1}$/,
+        ]
+        const violations: CustomViolationReturnType[] = []
+
+        body.find('input[type="image"]').each((_, img) => {
+            const $img = Cypress.$(img)
+
+            if ($img.is(':hidden')) {
+                return
+            }
+
+            const alt = $img.attr('alt')
+            const ariaLabel = $img.attr('aria-label')?.trim()
+            const ariaLabelledBy = $img.attr('aria-labelledby')?.trim()
+            const title = $img.attr('title')?.trim()
+
+            const hasNoName =
+                !ariaLabel &&
+                !ariaLabelledBy &&
+                !title &&
+                (alt === undefined || alt.trim() === '')
+
+            if (hasNoName) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'bad-alt-input-image',
+                        impact: 'serious',
+                        description:
+                            '<input type="image"> elements must have an accessible name',
+                        help: 'The element has no alt attribute, aria-label, aria-labelledby or title',
+                        helpUrl:
+                            'https://www.w3.org/WAI/WCAG22/Techniques/failures/F65',
+                        html: img.outerHTML,
+                        failureSummary: [
+                            'Add a meaningful alt attribute.',
+                            'Alternatively, use aria-label or aria-labelledby.',
+                            'Alternatively, use a descriptive title attribute.',
+                        ],
+                        tags: ['wcag2a', 'wcag111'],
+                    })
+                )
+                return
+            }
+
+            const altText = alt?.trim() || ''
+            const isBadAltText = badAltPatterns.some((pattern) =>
+                pattern.test(altText)
+            )
+
+            if (isBadAltText) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'bad-alt-input-image',
+                        impact: 'serious',
+                        description: `The alt text "${altText}" looks like a filename or placeholder`,
+                        help: 'Alternative text must be a meaningful replacement for the image content',
+                        helpUrl:
+                            'https://www.w3.org/WAI/WCAG22/Techniques/failures/F30',
+                        html: img.outerHTML,
+                        failureSummary: [
+                            `Change the alt attribute to describe the purpose of the image.`,
+                            `Do not use filenames (like .jpg).`,
+                            `Do not use generic words like "image" or "placeholder".`,
+                            `Do not use only numbers.`,
+                            `Do not use only special characters or symbols.`,
+                            `Do not use only one character.`,
+                        ],
+                        tags: ['wcag2a', 'wcag111'],
+                    })
+                )
+            }
+        })
+
         if (violations.length) {
             callback(violations)
         }
