@@ -7962,51 +7962,6 @@
                 }
             },
             "expected": "passed",
-            "testcaseId": "49d79a4e4e4a994a8eb7cf2eaf59c99d2251cac5",
-            "testcaseTitle": "Passed Example 1",
-            "relativePath": "testcases/bc659a/49d79a4e4e4a994a8eb7cf2eaf59c99d2251cac5.html",
-            "url": "https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases/bc659a/49d79a4e4e4a994a8eb7cf2eaf59c99d2251cac5.html",
-            "rulePage": "https://www.w3.org/WAI/standards-guidelines/act/rules/bc659a/proposed/"
-        },
-        {
-            "ruleId": "bc659a",
-            "approved": true,
-            "ruleName": "Meta element has no refresh delay",
-            "ruleAccessibilityRequirements": {
-                "wcag20:2.2.1": {
-                    "forConformance": true,
-                    "failed": "not satisfied",
-                    "passed": "further testing needed",
-                    "inapplicable": "further testing needed"
-                },
-                "wcag20:2.2.4": {
-                    "forConformance": true,
-                    "secondary": true,
-                    "failed": "not satisfied",
-                    "passed": "further testing needed",
-                    "inapplicable": "further testing needed"
-                },
-                "wcag20:3.2.5": {
-                    "forConformance": true,
-                    "secondary": true,
-                    "failed": "not satisfied",
-                    "passed": "further testing needed",
-                    "inapplicable": "further testing needed"
-                },
-                "wcag-technique:G110": {
-                    "forConformance": false,
-                    "failed": "not satisfied",
-                    "passed": "further testing needed",
-                    "inapplicable": "further testing needed"
-                },
-                "wcag-technique:H76": {
-                    "forConformance": false,
-                    "failed": "not satisfied",
-                    "passed": "further testing needed",
-                    "inapplicable": "further testing needed"
-                }
-            },
-            "expected": "passed",
             "testcaseId": "d48be8e9b638b9c27714cb3118a335376ed65f0f",
             "testcaseTitle": "Passed Example 2",
             "relativePath": "testcases/bc659a/d48be8e9b638b9c27714cb3118a335376ed65f0f.html",
