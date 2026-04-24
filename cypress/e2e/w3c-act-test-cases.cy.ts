@@ -41,8 +41,8 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     })
 
     benchmarkData.testcases
-        .slice(0, 200)
-        .filter((tc: W3CActTestCaseType) => tc.ruleId === '46ca7f')
+        .slice(200, 400)
+        // .filter((tc: W3CActTestCaseType) => tc.ruleId === '46ca7f')
         .forEach((tc: W3CActTestCaseType) => {
             it(`Benchmark ${tc.testcaseTitle}`, () => {
                 const errorList: { id: string; message: string }[] = []
@@ -70,13 +70,13 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
                         .join(', ')
 
                     const contextInfo = `
-                    --- Diagnosis ---
-                    ACT Rule ID: ${tc.ruleId}
-                    Expected Axe ID: ${targetAxeRuleIds.join(', ') || 'not mapped'}
-                    Expected Outcome: ${tc.expected}
-                    Detected IDs: [${detectedIds}]
-                    ----------------
-                `
+                        --- Diagnosis ---
+                        ACT Rule ID: ${tc.ruleId}
+                        Expected Axe ID: ${targetAxeRuleIds.join(', ') || 'not mapped'}
+                        Expected Outcome: ${tc.expected}
+                        Detected IDs: [${detectedIds}]
+                        ----------------
+                    `
 
                     if (tc.expected === 'failed') {
                         if (targetIssueFound) {
