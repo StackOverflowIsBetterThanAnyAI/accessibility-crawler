@@ -346,3 +346,46 @@ export const checkAdjacentLinks = (callback: CustomAuditCallback) => {
         }
     })
 }
+
+export const checkConflictDecorativeRole = (callback: CustomAuditCallback) => {
+    cy.get('body').then((body) => {
+        const violations: CustomViolationReturnType[] = []
+        body.find('[role="presentation"], [role="none"]').each((_, el) => {
+            const $el = Cypress.$(el)
+
+            const alt = $el.attr('alt')?.trim()
+            const ariaLabel = $el.attr('aria-label')?.trim()
+            const ariaLabelledBy = $el.attr('aria-labelledby')?.trim()
+            const title = $el.attr('title')?.trim()
+            const tabIndex = $el.attr('tabindex')
+
+            const isFocusable =
+                tabIndex !== undefined && parseInt(tabIndex) >= 0
+            const hasAriaName = !!ariaLabel || !!ariaLabelledBy || !!title
+
+            if (isFocusable || hasAriaName) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'conflict-decorative-role',
+                        impact: 'critical',
+                        description:
+                            'Element has role="presentation" or "none" but also a text alternative',
+                        help: 'Decorative elements should not have an accessible name to avoid confusing assistive technologies',
+                        helpUrl:
+                            'https://www.w3.org/WAI/WCAG22/Techniques/failures/F38',
+                        html: el.outerHTML,
+                        failureSummary: [
+                            'Remove the aria-label/-labelledby, title or non-empty alt attribute if the element is purely decorative.',
+                            'Or remove the role="presentation"/"none" if the element is actually important.',
+                        ],
+                        tags: ['wcag2a', 'wcag111'],
+                    })
+                )
+            }
+        })
+
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
