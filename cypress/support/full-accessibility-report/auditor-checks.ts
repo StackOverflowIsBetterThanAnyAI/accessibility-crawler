@@ -42,6 +42,7 @@ export const checkBadAltTextImage = (callback: CustomAuditCallback) => {
                 )
             }
         })
+
         if (violations.length) {
             callback(violations)
         }
