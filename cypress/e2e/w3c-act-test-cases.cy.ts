@@ -43,7 +43,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
 
     benchmarkData.testcases
         .slice(600, 700)
-        //.filter((tc: W3CActTestCaseType) => tc.ruleId === 'bisz58') //
+        .filter((tc: W3CActTestCaseType) => tc.ruleId === 'cf77f2') // , , , , , , ,
         .forEach((tc: W3CActTestCaseType) => {
             it(`Benchmark ${tc.testcaseTitle}`, () => {
                 const errorList: { id: string; message: string }[] = []
@@ -54,7 +54,6 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
 
                 cy.then(() => {
                     const targetAxeRuleIds = actToAxeMap[tc.ruleId] || []
-                    const isMapped = targetAxeRuleIds.length > 0
 
                     const targetIssue = errorList.find((error) =>
                         targetAxeRuleIds.some(
@@ -84,15 +83,11 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
                             cy.log(
                                 `Target rule "${targetAxeRuleIds.join(', ')}" correctly detected.`
                             )
-                        } else if (!isMapped && anyIssueFound) {
-                            cy.log(
-                                `ACT ID ${tc.ruleId} is unmapped. Found issues [${detectedIds}], assuming success for benchmark.`
-                            )
                         } else {
                             const errorMsg =
                                 targetAxeRuleIds.length > 0
                                     ? `Expected specific rule "${targetAxeRuleIds.join(', ')}" but only found [${detectedIds}].`
-                                    : `Unmapped ACT rule expected a failure but none was detected.`
+                                    : `ACT rule expected a failure but none was detected.`
 
                             throw new Error(`${errorMsg}\n${contextInfo}`)
                         }
