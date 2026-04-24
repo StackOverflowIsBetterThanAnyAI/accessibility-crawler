@@ -247,7 +247,7 @@ export const checkHeadingOrder = (callback: CustomAuditCallback) => {
             violations.push(
                 createCustomViolation({
                     id: 'heading-order-no-h1',
-                    impact: 'serious',
+                    impact: 'moderate',
                     description:
                         'The first heading on the page must be an <h1>',
                     help: 'A page should start with an <h1>-level heading to establish the main topic',
@@ -368,7 +368,7 @@ export const checkConflictDecorativeRole = (callback: CustomAuditCallback) => {
                 violations.push(
                     createCustomViolation({
                         id: 'conflict-decorative-role',
-                        impact: 'critical',
+                        impact: 'serious',
                         description:
                             'Element has role="presentation" or "none" but also a text alternative',
                         help: 'Decorative elements should not have an accessible name to avoid confusing assistive technologies',
@@ -384,6 +384,54 @@ export const checkConflictDecorativeRole = (callback: CustomAuditCallback) => {
                 )
             }
         })
+
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
+
+export const checkFirstValidMetaRefresh = (callback: CustomAuditCallback) => {
+    cy.get('head').then((head) => {
+        const violations: CustomViolationReturnType[] = []
+
+        let firstValidElement: HTMLElement | null = null
+        let detectedDelay = -1
+
+        head.find('meta[http-equiv="refresh"]').each((_, el) => {
+            if (firstValidElement) {
+                return
+            }
+
+            const content = el.getAttribute('content')?.trim() || ''
+
+            const match = content.match(/^\s*(\d+)(?:\s*;|\s*$)/)
+
+            if (match) {
+                firstValidElement = el
+                detectedDelay = parseInt(match[1], 10)
+            }
+        })
+
+        if (firstValidElement && detectedDelay > 72000) {
+            violations.push(
+                createCustomViolation({
+                    id: 'meta-refresh-delay',
+                    impact: 'serious',
+                    description: `The first valid meta refresh has a delay of ${detectedDelay} seconds`,
+                    help: 'Delayed refreshes must not exceed 72,000 seconds (20 hours)',
+                    html: (firstValidElement as HTMLElement).outerHTML,
+                    helpUrl:
+                        'https://www.w3.org/WAI/WCAG21/Techniques/failures/F40',
+                    failureSummary: [
+                        'The delay specified in <meta http-equiv="refresh"> exceeds the 72,000-second limit.',
+                        'To pass level A: Use a server-side redirect or set the delay to 0.',
+                        'To satisfy level AAA: Avoid any automatic refresh entirely.',
+                    ],
+                    tags: ['wcag2a', 'wcag221'],
+                })
+            )
+        }
 
         if (violations.length) {
             callback(violations)

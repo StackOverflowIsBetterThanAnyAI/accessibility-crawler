@@ -17,6 +17,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
         qt1vmo: 'bad-alt-image',
         '59796f': 'bad-alt-input-image',
         '46ca7f': 'conflict-decorative-role',
+        bisz58: 'meta-refresh-delay',
     }
 
     const actToAxeMap: Record<string, string[]> = {}
@@ -41,8 +42,8 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     })
 
     benchmarkData.testcases
-        .slice(200, 400)
-        // .filter((tc: W3CActTestCaseType) => tc.ruleId === '46ca7f')
+        .slice(600, 700)
+        //.filter((tc: W3CActTestCaseType) => tc.ruleId === 'bisz58') //
         .forEach((tc: W3CActTestCaseType) => {
             it(`Benchmark ${tc.testcaseTitle}`, () => {
                 const errorList: { id: string; message: string }[] = []
@@ -90,7 +91,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
                         } else {
                             const errorMsg =
                                 targetAxeRuleIds.length > 0
-                                    ? `Expected specific rule "${targetAxeRuleIds.join(', ')}" but found [${detectedIds}].`
+                                    ? `Expected specific rule "${targetAxeRuleIds.join(', ')}" but only found [${detectedIds}].`
                                     : `Unmapped ACT rule expected a failure but none was detected.`
 
                             throw new Error(`${errorMsg}\n${contextInfo}`)
