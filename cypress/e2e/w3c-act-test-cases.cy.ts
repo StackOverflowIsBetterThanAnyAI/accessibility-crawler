@@ -5,14 +5,9 @@ import { W3CActTestCaseType } from '../support/full-accessibility-report/types'
 describe('System Benchmark: W3C ACT Rules Validation', () => {
     const benchmarkData = require('../fixtures/testcases.json')
 
+    //  23:10     1173 tests      952 passing      221 failing
+
     const customActMapping: Record<string, string> = {
-        f51b46: 'video-missing-captions',
-        eac66b: 'video-missing-captions',
-        '1ea59c': 'video-missing-descriptions',
-        '1ec09b': 'video-missing-descriptions',
-        c5a4ea: 'video-missing-descriptions',
-        c3232f: 'video-missing-descriptions',
-        d7ba54: 'video-missing-descriptions',
         '23a2a8': 'bad-alt-image',
         qt1vmo: 'bad-alt-image',
         '59796f': 'bad-alt-input-image',
@@ -43,8 +38,8 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     })
 
     benchmarkData.testcases
-        .slice(800, 900)
-        .filter((tc: W3CActTestCaseType) => tc.ruleId === 'ffd0e9') // , ucwvc8, 4b1c6c, e88epe
+        //.slice(1000, 1200)
+        //.filter((tc: W3CActTestCaseType) => tc.ruleId === '59br37')
         .forEach((tc: W3CActTestCaseType) => {
             it(`Benchmark ${tc.testcaseTitle}`, () => {
                 const errorList: { id: string; message: string }[] = []
