@@ -18,6 +18,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
         '59796f': 'bad-alt-input-image',
         '46ca7f': 'conflict-decorative-role',
         bisz58: 'meta-refresh-delay',
+        ffd0e9: 'non-empty-heading',
     }
 
     const actToAxeMap: Record<string, string[]> = {}
@@ -42,8 +43,8 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     })
 
     benchmarkData.testcases
-        .slice(600, 700)
-        .filter((tc: W3CActTestCaseType) => tc.ruleId === 'cf77f2') // , , , , , , ,
+        .slice(800, 900)
+        .filter((tc: W3CActTestCaseType) => tc.ruleId === 'ffd0e9') // , ucwvc8, 4b1c6c, e88epe
         .forEach((tc: W3CActTestCaseType) => {
             it(`Benchmark ${tc.testcaseTitle}`, () => {
                 const errorList: { id: string; message: string }[] = []

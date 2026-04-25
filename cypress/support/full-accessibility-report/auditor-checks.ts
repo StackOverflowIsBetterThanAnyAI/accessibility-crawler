@@ -292,6 +292,86 @@ export const checkHeadingOrder = (callback: CustomAuditCallback) => {
     })
 }
 
+export const checkNonEmptyHeading = (callback: CustomAuditCallback) => {
+    cy.get('body').then((body) => {
+        const violations: CustomViolationReturnType[] = []
+        body.find('h1, h2, h3, h4, h5, h6, [role="heading"]').each((_, el) => {
+            const $el = Cypress.$(el)
+
+            const isHidden =
+                $el.is(':hidden') ||
+                $el.attr('aria-hidden') === 'true' ||
+                $el.css('display') === 'none'
+            const isDecorative =
+                $el.attr('role') === 'presentation' ||
+                $el.attr('role') === 'none'
+
+            if (isHidden || isDecorative) {
+                return
+            }
+
+            let accessibleName = ''
+
+            const labelledBy = $el.attr('aria-labelledby')
+            if (labelledBy) {
+                const target = document.getElementById(
+                    labelledBy.split(/\s+/)[0]
+                )
+                accessibleName = target?.innerText || target?.textContent || ''
+            }
+
+            if (!accessibleName.trim()) {
+                accessibleName = $el.attr('aria-label') || ''
+            }
+
+            if (!accessibleName.trim()) {
+                const hasImages = $el.find('img').length > 0
+                if (hasImages) {
+                    let combinedText = ''
+                    $el.contents().each((_, node) => {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            combinedText += node.textContent
+                        } else if (node.nodeName === 'IMG') {
+                            combinedText +=
+                                (node as HTMLImageElement).getAttribute(
+                                    'alt'
+                                ) || ''
+                        } else {
+                            combinedText += Cypress.$(node).text()
+                        }
+                    })
+                    accessibleName = combinedText
+                } else {
+                    accessibleName = $el.text()
+                }
+            }
+
+            if (!accessibleName.trim()) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'non-empty-heading',
+                        impact: 'serious',
+                        description: 'Heading has no accessible name.',
+                        help: 'Headings must have text or an aria-label to be useful for screen reader users.',
+                        helpUrl:
+                            'https://www.w3.org/WAI/WCAG22/Techniques/general/G130',
+                        html: el.outerHTML,
+                        failureSummary: [
+                            'The heading content is programmatically empty.',
+                            'Add text content, an aria-label, or descriptive alt-text for images inside the heading.',
+                        ],
+                        tags: ['wcag2a', 'wcag131'],
+                    })
+                )
+            }
+        })
+
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
+
 export const checkAdjacentLinks = (callback: CustomAuditCallback) => {
     cy.get('body').then((body) => {
         const violations: CustomViolationReturnType[] = []
