@@ -27,7 +27,7 @@ export const getInternalLinks = (baseUrl: string) => {
                     if (lastSegment.includes('.')) return null
 
                     return url.href
-                } catch (_error) {
+                } catch {
                     return null
                 }
             })
