@@ -434,7 +434,6 @@ export const checkConflictDecorativeRole = (callback: CustomAuditCallback) => {
         body.find('[role="presentation"], [role="none"]').each((_, el) => {
             const $el = Cypress.$(el)
 
-            const alt = $el.attr('alt')?.trim()
             const ariaLabel = $el.attr('aria-label')?.trim()
             const ariaLabelledBy = $el.attr('aria-labelledby')?.trim()
             const title = $el.attr('title')?.trim()
@@ -458,6 +457,37 @@ export const checkConflictDecorativeRole = (callback: CustomAuditCallback) => {
                         failureSummary: [
                             'Remove the aria-label/-labelledby, title or non-empty alt attribute if the element is purely decorative.',
                             'Or remove the role="presentation"/"none" if the element is actually important.',
+                        ],
+                        tags: ['wcag2a', 'wcag111'],
+                    })
+                )
+            }
+        })
+
+        body.find('img[alt=""]').each((_, el) => {
+            const $el = Cypress.$(el)
+
+            const ariaLabel = $el.attr('aria-label')?.trim()
+            const ariaLabelledBy = $el.attr('aria-labelledby')?.trim()
+            const role = $el.attr('role')?.trim()
+
+            const hasAltAriaConflict =
+                ariaLabelledBy?.length || ariaLabel?.length
+
+            if (hasAltAriaConflict && !role) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'conflict-decorative-role',
+                        impact: 'serious',
+                        description:
+                            'Image has an empty alt attribute but also a text alternative',
+                        help: 'Decorative elements should not have an accessible name to avoid confusing assistive technologies',
+                        helpUrl:
+                            'https://www.w3.org/WAI/standards-guidelines/act/rules/46ca7f/',
+                        html: el.outerHTML,
+                        failureSummary: [
+                            'Remove the non-empty alt attribute if the element is actually important.',
+                            'Or remove the role="presentation"/"none" if the element is purely decorative.',
                         ],
                         tags: ['wcag2a', 'wcag111'],
                     })
