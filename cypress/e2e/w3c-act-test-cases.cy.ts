@@ -5,6 +5,10 @@ import { W3CActTestCaseType } from '../support/full-accessibility-report/types'
 describe('System Benchmark: W3C ACT Rules Validation', () => {
     const benchmarkData = require('../fixtures/testcases.json')
 
+    // axe checks
+    //  19:23     1173 tests      946 passing      227 failing
+
+    // custom checks
     //  23:10     1173 tests      952 passing      221 failing
 
     const customActMapping: Record<string, string> = {
