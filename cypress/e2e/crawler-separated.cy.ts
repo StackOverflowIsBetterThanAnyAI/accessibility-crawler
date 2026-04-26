@@ -24,7 +24,9 @@ describe('Crawler: Discovery Phase', () => {
             }
 
             const currentPath = queue.shift()
-            if (!currentPath) return
+            if (!currentPath) {
+                return
+            }
 
             const normalizedPath = removeTrailingSlash(currentPath)
 

@@ -16,7 +16,9 @@ export const getInternalLinks = (baseUrl: string) => {
                     const isInternal = url.origin === baseOrigin
                     const isWebProtocol = url.protocol.startsWith('http')
 
-                    if (!isInternal || !isWebProtocol) return null
+                    if (!isInternal || !isWebProtocol) {
+                        return null
+                    }
 
                     // remove hash for consistent crawling
                     url.hash = ''
@@ -24,7 +26,9 @@ export const getInternalLinks = (baseUrl: string) => {
                     // ignore links that point to files
                     const path = url.pathname
                     const lastSegment = path.split('/').pop() || ''
-                    if (lastSegment.includes('.')) return null
+                    if (lastSegment.includes('.')) {
+                        return null
+                    }
 
                     return url.href
                 } catch {
