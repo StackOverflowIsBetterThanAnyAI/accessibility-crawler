@@ -506,7 +506,7 @@ export const checkFirstValidMetaRefresh = (callback: CustomAuditCallback) => {
                     failureSummary: [
                         'The delay specified in <meta http-equiv="refresh"> exceeds the 72,000-second limit.',
                         'To pass level A: Use a server-side redirect or set the delay to 0.',
-                        'To satisfy level AAA: Avoid any automatic refresh entirely.',
+                        'To pass level AAA: Avoid any automatic refresh entirely.',
                     ],
                     tags: ['wcag2a', 'wcag221'],
                 })
