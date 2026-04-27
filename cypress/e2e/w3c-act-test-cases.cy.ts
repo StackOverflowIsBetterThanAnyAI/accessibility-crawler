@@ -6,10 +6,10 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     const benchmarkData = require('../fixtures/testcases.json')
 
     // axe checks
-    //  19:23     1173 tests      946 passing      227 failing
+    //  18:38     1173 tests      946 passing      227 failing
 
     // custom checks
-    //  23:15     1173 tests      953 passing      220 failing
+    //  24:02     1173 tests      963 passing      210 failing
 
     const customActMapping: Record<string, string> = {
         '23a2a8': 'bad-alt-image',
@@ -21,6 +21,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
         '2t702h': 'details-summary-name',
         kb1m8s: 'prohibited-aria-naming',
         off6ek: 'language-mismatch',
+        ucwvc8: 'primary-language-mismatch',
     }
 
     const actToAxeMap: Record<string, string[]> = {}
@@ -45,8 +46,9 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     })
 
     benchmarkData.testcases
-        //.slice(700, 800) // next up
-        .filter((tc: W3CActTestCaseType) => tc.ruleId === 'off6ek')
+        // .slice(800, 900) // next up
+        .filter((tc: W3CActTestCaseType) => tc.ruleId === 'ucwvc8')
+        // .slice(6)
         .forEach((tc: W3CActTestCaseType) => {
             it(`Benchmark ${tc.testcaseTitle}`, () => {
                 const errorList: { id: string; message: string }[] = []

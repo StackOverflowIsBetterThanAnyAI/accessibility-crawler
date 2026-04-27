@@ -682,8 +682,8 @@ export const checkProhibitedAria = (callback: CustomAuditCallback) => {
                         createCustomViolation({
                             id: 'prohibited-aria-naming',
                             impact: 'serious',
-                            description: `The attribute "${attr}" is prohibited on a "${effectiveRole}" element.`,
-                            help: `Elements with role "${effectiveRole}" (like plain divs or paragraphs) cannot be given an accessible name.`,
+                            description: `The attribute "${attr}" is prohibited on a "${effectiveRole}" element`,
+                            help: `Elements with role "${effectiveRole}" (like plain divs or paragraphs) cannot be given an accessible name`,
                             helpUrl:
                                 'https://www.w3.org/WAI/standards-guidelines/act/rules/kb1m8s/proposed/',
                             html: el.outerHTML,
@@ -702,6 +702,17 @@ export const checkProhibitedAria = (callback: CustomAuditCallback) => {
             callback(violations)
         }
     })
+}
+
+const checkLangCompatibility = (
+    declared: string,
+    detected3: string
+): boolean => {
+    const baseDeclared = declared.split('-')[0]
+    if (Iso6393To1[detected3]) {
+        return Iso6393To1[detected3] === baseDeclared
+    }
+    return true
 }
 
 export const checkLanguageMismatch = (callback: CustomAuditCallback) => {
@@ -741,7 +752,7 @@ export const checkLanguageMismatch = (callback: CustomAuditCallback) => {
 
             const clone = $el.clone()
             clone.find('[lang]').remove()
-            clone.find('script, style').remove()
+            clone.find('script, style, noscript').remove()
 
             const cleanText = (clone.text() + ' ' + extraText.join(' '))
                 .replace(/\s+/g, ' ')
@@ -755,23 +766,12 @@ export const checkLanguageMismatch = (callback: CustomAuditCallback) => {
                 return
             }
 
-            const checkLangCompatibility = (
-                declared: string,
-                detected3: string
-            ): boolean => {
-                const baseDeclared = declared.split('-')[0]
-                if (Iso6393To1[detected3]) {
-                    return Iso6393To1[detected3] === baseDeclared
-                }
-                return true
-            }
-
             if (!checkLangCompatibility(declaredLang, detectedLang3)) {
                 violations.push(
                     createCustomViolation({
                         id: 'language-mismatch',
                         impact: 'moderate',
-                        description: `The declared language "${declaredLang}" does not match the detected language.`,
+                        description: `The declared language "${declaredLang}" does not match the detected language`,
                         help: 'The text appears to be in a different language than specified',
                         helpUrl:
                             'https://www.w3.org/WAI/WCAG22/Understanding/language-of-parts.html',
@@ -786,6 +786,53 @@ export const checkLanguageMismatch = (callback: CustomAuditCallback) => {
                 )
             }
         })
+
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
+
+export const checkPrimaryLanguageMismatch = (callback: CustomAuditCallback) => {
+    cy.get('html').then(($html) => {
+        const violations: CustomViolationReturnType[] = []
+        const declaredLang = $html.attr('lang')?.trim().toLowerCase()
+        if (!declaredLang) {
+            return
+        }
+
+        const clone = Cypress.$('body').clone()
+        clone.find('[lang]').remove()
+        clone.find('script, style, noscript').remove()
+
+        const cleanText = clone.text().replace(/\s+/g, ' ').trim()
+        if (cleanText.length < 30) {
+            return
+        }
+
+        const detectedLang3 = franc(cleanText)
+        if (detectedLang3 === 'und') {
+            return
+        }
+
+        if (!checkLangCompatibility(declaredLang, detectedLang3)) {
+            violations.push(
+                createCustomViolation({
+                    id: 'primary-language-mismatch',
+                    impact: 'serious',
+                    description: `The declared language "${declaredLang}" does not match the detected language`,
+                    help: 'The site appears to be in a different language than specified',
+                    helpUrl: '',
+                    html: $html[0].outerHTML.substring(0, 32) + '...',
+                    failureSummary: [
+                        `Declared lang attribute: "${declaredLang}"`,
+                        `Detected language (NLP): "${detectedLang3}"`,
+                        'Ensure the "lang" attribute correctly identifies the primary language of the site.',
+                    ],
+                    tags: ['wcag2a', 'wcag311'],
+                })
+            )
+        }
 
         if (violations.length) {
             callback(violations)
