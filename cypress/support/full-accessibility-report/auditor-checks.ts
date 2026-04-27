@@ -1,5 +1,7 @@
+import { franc } from 'franc'
 import { createCustomViolation } from './auditor-helper'
 import { CustomAuditCallback, CustomViolationReturnType } from './types'
+import { Iso6393To1 } from './franc-map'
 
 export const checkBadAltTextImage = (callback: CustomAuditCallback) => {
     cy.get('body').then((body) => {
@@ -693,6 +695,95 @@ export const checkProhibitedAria = (callback: CustomAuditCallback) => {
                         })
                     )
                 })
+            }
+        })
+
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
+
+export const checkLanguageMismatch = (callback: CustomAuditCallback) => {
+    cy.get('body').then((body) => {
+        const violations: CustomViolationReturnType[] = []
+
+        body.find('[lang]').each((_, el) => {
+            const $el = Cypress.$(el)
+            const declaredLang = $el.attr('lang')?.trim().toLowerCase()
+            if (!declaredLang) {
+                return
+            }
+
+            const extraText = []
+
+            if ($el.attr('aria-label')) {
+                extraText.push($el.attr('aria-label'))
+            }
+
+            $el.find('img[alt]').each((_, img) => {
+                const $img = Cypress.$(img)
+                if ($img.closest('[lang]').is($el)) {
+                    extraText.push($img.attr('alt'))
+                }
+            })
+
+            const labelledBy = $el.attr('aria-labelledby')
+            if (labelledBy) {
+                const ids = labelledBy.split(/\s+/)
+                ids.forEach((id) => {
+                    const labelElement = body.find(`#${id}`)
+                    if (labelElement.length) {
+                        extraText.push(labelElement.text())
+                    }
+                })
+            }
+
+            const clone = $el.clone()
+            clone.find('[lang]').remove()
+            clone.find('script, style').remove()
+
+            const cleanText = (clone.text() + ' ' + extraText.join(' '))
+                .replace(/\s+/g, ' ')
+                .trim()
+            if (cleanText.length < 30) {
+                return
+            }
+
+            const detectedLang3 = franc(cleanText)
+            if (detectedLang3 === 'und') {
+                return
+            }
+
+            const checkLangCompatibility = (
+                declared: string,
+                detected3: string
+            ): boolean => {
+                const baseDeclared = declared.split('-')[0]
+                if (Iso6393To1[detected3]) {
+                    return Iso6393To1[detected3] === baseDeclared
+                }
+                return true
+            }
+
+            if (!checkLangCompatibility(declaredLang, detectedLang3)) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'language-mismatch',
+                        impact: 'moderate',
+                        description: `The declared language "${declaredLang}" does not match the detected language.`,
+                        help: 'The text appears to be in a different language than specified',
+                        helpUrl:
+                            'https://www.w3.org/WAI/WCAG22/Understanding/language-of-parts.html',
+                        html: el.outerHTML,
+                        failureSummary: [
+                            `Declared lang attribute: "${declaredLang}"`,
+                            `Detected language (NLP): "${detectedLang3}"`,
+                            'Ensure the "lang" attribute correctly identifies the primary language of the text content.',
+                        ],
+                        tags: ['wcag2aa', 'wcag312'],
+                    })
+                )
             }
         })
 

@@ -117,6 +117,18 @@ const Secret = () => (
         <h1 className="foreground">Secret Page</h1>
         <p>This page was found through the "About Us" section!</p>
         <Link to="/about/secret/deep">Go even deeper ...</Link>
+        <div lang="de">
+            <img
+                src="bridge.jpg"
+                alt="Golden Gate Bridge in San Francisco during sunset"
+            />
+        </div>
+        <button
+            lang="en"
+            aria-label="Ich heiße Michael und spiele in meiner Freizeit Fußball"
+        >
+            Click me
+        </button>
     </div>
 )
 
