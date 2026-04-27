@@ -19,6 +19,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
         bisz58: 'meta-refresh-delay',
         ffd0e9: 'non-empty-heading',
         '2t702h': 'details-summary-name',
+        kb1m8s: 'prohibited-aria-naming',
     }
 
     const actToAxeMap: Record<string, string[]> = {}
@@ -44,7 +45,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
 
     benchmarkData.testcases
         .slice(500, 600) // next up
-        .filter((tc: W3CActTestCaseType) => tc.ruleId === '2t702h')
+        .filter((tc: W3CActTestCaseType) => tc.ruleId === 'kb1m8s')
         .forEach((tc: W3CActTestCaseType) => {
             it(`Benchmark ${tc.testcaseTitle}`, () => {
                 const errorList: { id: string; message: string }[] = []

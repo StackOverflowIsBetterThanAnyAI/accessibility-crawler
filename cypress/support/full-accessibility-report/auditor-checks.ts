@@ -623,3 +623,81 @@ export const checkDetailsSummary = (callback: CustomAuditCallback) => {
         }
     })
 }
+
+export const checkProhibitedAria = (callback: CustomAuditCallback) => {
+    cy.get('body').then((body) => {
+        const violations: CustomViolationReturnType[] = []
+        const namingProhibitedRoles = [
+            'generic',
+            'paragraph',
+            'none',
+            'presentation',
+        ]
+        const prohibitedAttributes = [
+            'aria-label',
+            'aria-labelledby',
+            'aria-roledescription',
+            'aria-braillelabel',
+            'aria-brailleroledescription',
+        ]
+
+        body.find('*').each((_, el) => {
+            const $el = Cypress.$(el)
+            const presentProhibitedAttrs = prohibitedAttributes.filter((attr) =>
+                el.hasAttribute(attr)
+            )
+
+            if (presentProhibitedAttrs.length === 0) {
+                return
+            }
+
+            if (
+                $el.is(':hidden') ||
+                $el.attr('aria-hidden') === 'true' ||
+                $el.closest('[hidden]').length > 0
+            ) {
+                return
+            }
+
+            const tagName = el.tagName.toLowerCase()
+            const explicitRole = $el.attr('role')?.trim().toLowerCase()
+
+            let effectiveRole = explicitRole
+            if (!effectiveRole) {
+                if (tagName === 'div' || tagName === 'span') {
+                    effectiveRole = 'generic'
+                } else if (tagName === 'p') {
+                    effectiveRole = 'paragraph'
+                }
+            }
+
+            if (
+                effectiveRole &&
+                namingProhibitedRoles.includes(effectiveRole)
+            ) {
+                presentProhibitedAttrs.forEach((attr) => {
+                    violations.push(
+                        createCustomViolation({
+                            id: 'prohibited-aria-naming',
+                            impact: 'serious',
+                            description: `The attribute "${attr}" is prohibited on a "${effectiveRole}" element.`,
+                            help: `Elements with role "${effectiveRole}" (like plain divs or paragraphs) cannot be given an accessible name.`,
+                            helpUrl:
+                                'https://www.w3.org/WAI/standards-guidelines/act/rules/kb1m8s/proposed/',
+                            html: el.outerHTML,
+                            failureSummary: [
+                                `Element <${tagName}> is acting as role "${effectiveRole}".`,
+                                `The attribute "${attr}" is not allowed here because this role is purely structural and cannot be named.`,
+                            ],
+                            tags: ['wcag2a', 'wcag131'],
+                        })
+                    )
+                })
+            }
+        })
+
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
