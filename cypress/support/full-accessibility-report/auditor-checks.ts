@@ -534,7 +534,7 @@ export const checkFirstValidMetaRefresh = (callback: CustomAuditCallback) => {
                     helpUrl:
                         'https://www.w3.org/WAI/WCAG21/Techniques/failures/F40',
                     failureSummary: [
-                        'The delay specified in <meta http-equiv="refresh"> exceeds the 72,000-second limit.',
+                        'The delay specified in <meta http-equiv="refresh"> must not exceed the 72,000-second limit.',
                         'To pass level A: Use a server-side redirect or set the delay to 0.',
                         'To pass level AAA: Avoid any automatic refresh entirely.',
                     ],
@@ -542,6 +542,81 @@ export const checkFirstValidMetaRefresh = (callback: CustomAuditCallback) => {
                 })
             )
         }
+
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
+
+export const checkDetailsSummary = (callback: CustomAuditCallback) => {
+    cy.get('body').then((body) => {
+        const violations: CustomViolationReturnType[] = []
+
+        body.find('details').each((_, el) => {
+            const $details = Cypress.$(el)
+            const isHidden =
+                $details.is(':hidden') ||
+                $details.css('display') === 'none' ||
+                $details.attr('aria-hidden') === 'true'
+            if (isHidden) {
+                return
+            }
+
+            const $summary = $details.children('summary').first()
+
+            const role = $summary.attr('role')?.trim().toLowerCase()
+            let decorativeRoleConflict = false
+
+            if (role === 'presentation' || role === 'none') {
+                decorativeRoleConflict = true
+            }
+
+            if (role && role !== 'summary' && !decorativeRoleConflict) {
+                return
+            }
+
+            let accessibleName = ''
+
+            const labelledBy = $summary.attr('aria-labelledby')
+            if (labelledBy) {
+                const target = body.find(`#${labelledBy}`)
+                accessibleName = target.text().trim()
+            }
+
+            if (!accessibleName) {
+                accessibleName = $summary.attr('aria-label')?.trim() || ''
+            }
+
+            if (!accessibleName) {
+                accessibleName = $summary.text().trim()
+            }
+
+            if (
+                ($summary.length > 0 && accessibleName === '') ||
+                decorativeRoleConflict
+            ) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'details-summary-name',
+                        impact: 'serious',
+                        description:
+                            'Details element must have a visible and accessible summary name',
+                        help: 'The <summary> element provides the label for the expandable <details> widget. It must therefore not be empty',
+                        helpUrl:
+                            'https://www.w3.org/WAI/standards-guidelines/act/rules/2t702h/proposed/',
+                        html: $summary.length
+                            ? $summary[0].outerHTML
+                            : $details[0].outerHTML,
+                        failureSummary: [
+                            'The summary element must have a non-empty text content or an aria-label/labelledby attribute.',
+                            'The summary element must not have a decorative role (presentation/none).',
+                        ],
+                        tags: ['wcag2a', 'wcag412'],
+                    })
+                )
+            }
+        })
 
         if (violations.length) {
             callback(violations)
