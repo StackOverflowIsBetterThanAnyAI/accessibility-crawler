@@ -301,7 +301,7 @@ export const checkNonEmptyHeading = (callback: CustomAuditCallback) => {
             const $el = Cypress.$(el)
 
             const isHidden =
-                $el.is(':hidden') ||
+                ($el.is(':hidden') && $el.text() !== '') ||
                 $el.attr('aria-hidden') === 'true' ||
                 $el.css('display') === 'none'
             const isDecorative =
