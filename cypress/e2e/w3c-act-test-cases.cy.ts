@@ -22,6 +22,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
         kb1m8s: 'prohibited-aria-naming',
         off6ek: 'language-mismatch',
         ucwvc8: 'primary-language-mismatch',
+        b4f0c3: 'meta-valid-viewport',
     }
 
     const actToAxeMap: Record<string, string[]> = {}
@@ -46,9 +47,9 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     })
 
     benchmarkData.testcases
-        // .slice(800, 900) // next up
-        .filter((tc: W3CActTestCaseType) => tc.ruleId === 'ucwvc8')
-        // .slice(6)
+        // .slice(900, 1000) // next up
+        .filter((tc: W3CActTestCaseType) => tc.ruleId === 'b4f0c3')
+        // .slice(7, 11)
         .forEach((tc: W3CActTestCaseType) => {
             it(`Benchmark ${tc.testcaseTitle}`, () => {
                 const errorList: { id: string; message: string }[] = []

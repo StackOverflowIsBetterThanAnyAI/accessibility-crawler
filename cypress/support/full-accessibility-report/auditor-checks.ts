@@ -551,6 +551,80 @@ export const checkFirstValidMetaRefresh = (callback: CustomAuditCallback) => {
     })
 }
 
+export const checkValidMetaViewport = (callback: CustomAuditCallback) => {
+    cy.get('head').then((head) => {
+        const violations: CustomViolationReturnType[] = []
+
+        let isValidMaximumScale = true
+        let isValidUserScalable = true
+
+        let maxScaleMatch: RegExpMatchArray | null = null
+        let userScalableMatch: RegExpMatchArray | null = null
+
+        head.find('meta[name="viewport"]').each((_, el) => {
+            const content = el.getAttribute('content')?.trim() || ''
+            if (!content.length) {
+                return
+            }
+
+            maxScaleMatch = content.match(/maximum-scale\s*=\s*([^,\s]+)/i)
+            userScalableMatch = content.match(/user-scalable\s*=\s*([^,\s]+)/i)
+
+            if (maxScaleMatch) {
+                const val = maxScaleMatch[1].toLowerCase()
+                const num = parseFloat(val)
+                const isThisTagValid =
+                    !val ||
+                    (!isNaN(num) && (num < 0 || num >= 2)) ||
+                    ['device-width', 'device-height'].includes(val)
+                if (!isThisTagValid) {
+                    isValidMaximumScale = false
+                }
+            }
+
+            if (userScalableMatch) {
+                const val = userScalableMatch[1].toLowerCase()
+                const num = parseFloat(val)
+                const isThisTagValid =
+                    !val ||
+                    (!isNaN(num) && (num < -1 || num > 1)) ||
+                    ['device-width', 'device-height', 'yes'].includes(val)
+                if (!isThisTagValid) {
+                    isValidUserScalable = false
+                }
+            }
+        })
+
+        if (!isValidMaximumScale || !isValidUserScalable) {
+            violations.push(
+                createCustomViolation({
+                    id: 'meta-valid-viewport',
+                    impact: 'serious',
+                    description:
+                        'The viewport meta tag prevents zooming in on the page',
+                    help: 'Users with visual impairments must be able to zoom in on text to at least 200%',
+                    helpUrl:
+                        'https://www.w3.org/WAI/standards-guidelines/act/rules/b4f0c3/proposed/',
+                    html: head.find('meta[name="viewport"]')[0].outerHTML,
+                    failureSummary: [
+                        !isValidMaximumScale && maxScaleMatch
+                            ? `The maximum-scale attribute "${maxScaleMatch[1]}" must be a number less than 0 or greater than or equal to 2, or "device-width" or "device-height".`
+                            : '',
+                        !isValidUserScalable && userScalableMatch
+                            ? `The user-scalable attribute "${userScalableMatch[1]}" must be a number outside the range of -1 and +1, or "device-width" or "device-height" or "yes".`
+                            : '',
+                    ],
+                    tags: ['wcag2aa', 'wcag144'],
+                })
+            )
+        }
+
+        if (violations.length) {
+            callback(violations)
+        }
+    })
+}
+
 export const checkDetailsSummary = (callback: CustomAuditCallback) => {
     cy.get('body').then((body) => {
         const violations: CustomViolationReturnType[] = []
