@@ -24,14 +24,7 @@ export type CustomViolationReturnType = {
     description: string
     help: string
     helpUrl: string
-    nodes: [
-        {
-            failureSummary: string
-            html: string
-            impact: ImpactType
-            target: [string]
-        },
-    ]
+    nodes: ViolationNodeType[]
     tags: TagType[]
 }
 
@@ -58,4 +51,11 @@ export type W3CActTestCaseType = {
     url: string
     rulePage: string
     approved: boolean
+}
+
+export type ViolationNodeType = {
+    failureSummary: string
+    html: string
+    impact: ImpactType
+    target: [string]
 }

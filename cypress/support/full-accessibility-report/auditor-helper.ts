@@ -49,18 +49,24 @@ export const processViolations = (
                 .map((tag: string) => formatWCAGTag(tag))
                 .join(', ') || 'no WCAG reference'
 
-        violation.nodes.forEach((node: any) => {
-            const formattedMessage =
-                `issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
-                `${violation.help}.\n\n` +
-                `Element: ${node.html}\n\n` +
-                `${node.failureSummary?.replace(/\n\s(?!Fix)/g, '\n•')}\n\n` +
-                `Help: ${violation.helpUrl}`
+        violation.nodes.forEach(
+            (
+                node:
+                    | CustomViolationReturnType['nodes'][0]
+                    | axe.Result['nodes'][0]
+            ) => {
+                const formattedMessage =
+                    `issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
+                    `${violation.help}.\n\n` +
+                    `Element: ${node.html}\n\n` +
+                    `${node.failureSummary?.replace(/\n\s(?!Fix)/g, '\n•')}\n\n` +
+                    `Help: ${violation.helpUrl}`
 
-            errorList.push({
-                id: violation.id,
-                message: formattedMessage,
-            })
-        })
+                errorList.push({
+                    id: violation.id,
+                    message: formattedMessage,
+                })
+            }
+        )
     })
 }
