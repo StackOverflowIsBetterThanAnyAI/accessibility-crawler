@@ -11,7 +11,7 @@ export const createCustomViolation = (
         impact,
         nodes: [
             {
-                failureSummary: `Fix all of the following:\n• ${failureSummary.join('\n• ')}`,
+                failureSummary: `Fix all of the following:\n• ${failureSummary.filter((item) => item).join('\n• ')}`,
                 html,
                 impact,
                 target: [html],
