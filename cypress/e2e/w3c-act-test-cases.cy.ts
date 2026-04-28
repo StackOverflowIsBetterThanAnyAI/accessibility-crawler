@@ -3,13 +3,14 @@ import { runAxeAudit } from '../support/full-accessibility-report/auditor'
 import { W3CActTestCaseType } from '../support/full-accessibility-report/types'
 
 describe('System Benchmark: W3C ACT Rules Validation', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const benchmarkData = require('../fixtures/testcases.json')
 
     // axe checks
-    //  18:38     1173 tests      946 passing      227 failing
+    //  18:56     1172 tests      946 passing      226 failing
 
     // custom checks
-    //  26:25     1173 tests      969 passing      204 failing
+    //  23:12     1172 tests      969 passing      203 failing
 
     const customActMapping: Record<string, string> = {
         '23a2a8': 'bad-alt-image',
@@ -46,36 +47,32 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
         }
     })
 
-    benchmarkData.testcases
-        // .slice(900, 1000) // next up
-        // .filter((tc: W3CActTestCaseType) => tc.ruleId === 'b4f0c3')
-        // .slice(7, 11)
-        .forEach((tc: W3CActTestCaseType) => {
-            it(`Benchmark ${tc.testcaseTitle}`, () => {
-                const errorList: { id: string; message: string }[] = []
+    benchmarkData.testcases.forEach((tc: W3CActTestCaseType) => {
+        it(`Benchmark ${tc.testcaseTitle}`, () => {
+            const errorList: { id: string; message: string }[] = []
 
-                cy.visit(tc.url)
+            cy.visit(tc.url)
 
-                runAxeAudit(tc.url, errorList)
+            runAxeAudit(tc.url, errorList)
 
-                cy.then(() => {
-                    const targetAxeRuleIds = actToAxeMap[tc.ruleId] || []
+            cy.then(() => {
+                const targetAxeRuleIds = actToAxeMap[tc.ruleId] || []
 
-                    const targetIssue = errorList.find((error) =>
-                        targetAxeRuleIds.some(
-                            (id) =>
-                                error.id === id ||
-                                (error.id && error.id.includes(id))
-                        )
+                const targetIssue = errorList.find((error) =>
+                    targetAxeRuleIds.some(
+                        (id) =>
+                            error.id === id ||
+                            (error.id && error.id.includes(id))
                     )
+                )
 
-                    const targetIssueFound = !!targetIssue
-                    const anyIssueFound = errorList.length > 0
-                    const detectedIds = errorList
-                        .map((error) => error.id || 'unknown-id')
-                        .join(', ')
+                const targetIssueFound = !!targetIssue
+                const anyIssueFound = errorList.length > 0
+                const detectedIds = errorList
+                    .map((error) => error.id || 'unknown-id')
+                    .join(', ')
 
-                    const contextInfo = `
+                const contextInfo = `
                         --- Diagnosis ---
                         ACT Rule ID: ${tc.ruleId}
                         Expected Axe ID: ${targetAxeRuleIds.join(', ') || 'not mapped'}
@@ -84,37 +81,37 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
                         ----------------
                     `
 
-                    if (tc.expected === 'failed') {
-                        if (targetIssueFound) {
-                            cy.log(
-                                `Target rule "${targetAxeRuleIds.join(', ')}" correctly detected.`
-                            )
-                        } else {
-                            const errorMsg =
-                                targetAxeRuleIds.length > 0
-                                    ? `Expected specific rule "${targetAxeRuleIds.join(', ')}" but only found [${detectedIds}].`
-                                    : `ACT rule expected a failure but none was detected.`
+                if (tc.expected === 'failed') {
+                    if (targetIssueFound) {
+                        cy.log(
+                            `Target rule "${targetAxeRuleIds.join(', ')}" correctly detected.`
+                        )
+                    } else {
+                        const errorMsg =
+                            targetAxeRuleIds.length > 0
+                                ? `Expected specific rule "${targetAxeRuleIds.join(', ')}" but only found [${detectedIds}].`
+                                : `ACT rule expected a failure but none was detected.`
 
-                            throw new Error(`${errorMsg}\n${contextInfo}`)
-                        }
-                    } else if (
-                        tc.expected === 'passed' ||
-                        tc.expected === 'inapplicable'
-                    ) {
-                        if (!targetIssueFound) {
-                            cy.log('No false positive for target rule.')
-                            if (anyIssueFound) {
-                                cy.log(
-                                    `Found unrelated issue [${detectedIds}], but target rule "${targetAxeRuleIds.join(', ')}" remained silent.`
-                                )
-                            }
-                        } else {
-                            throw new Error(
-                                `False positive: Rule "${targetAxeRuleIds.join(', ')}" triggered.\n${contextInfo}`
+                        throw new Error(`${errorMsg}\n${contextInfo}`)
+                    }
+                } else if (
+                    tc.expected === 'passed' ||
+                    tc.expected === 'inapplicable'
+                ) {
+                    if (!targetIssueFound) {
+                        cy.log('No false positive for target rule.')
+                        if (anyIssueFound) {
+                            cy.log(
+                                `Found unrelated issue [${detectedIds}], but target rule "${targetAxeRuleIds.join(', ')}" remained silent.`
                             )
                         }
+                    } else {
+                        throw new Error(
+                            `False positive: Rule "${targetAxeRuleIds.join(', ')}" triggered.\n${contextInfo}`
+                        )
                     }
-                })
+                }
             })
         })
+    })
 })
