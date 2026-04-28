@@ -10,6 +10,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
     let sitemap: { urls: string[] }
 
     try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         sitemap = require('../fixtures/sitemap.json')
         if (sitemap.urls.length === 0) {
             it('Error: Sitemap is empty', () => {
