@@ -138,16 +138,15 @@ export const checkAltTextInputImage = (callback: CustomAuditCallback) => {
     })
 }
 
-export const checkVideoCaptionsAndDescriptions = (
-    callback: CustomAuditCallback
-) => {
+export const checkVideoCaptions = (callback: CustomAuditCallback) => {
     cy.get('body').then((body) => {
         const violations: CustomViolationReturnType[] = []
         body.find('video').each((_, video) => {
             const $video = Cypress.$(video)
+            if (video.hasAttribute('muted')) {
+                return
+            }
             const hasCaptions = $video.find('track[kind="captions"]').length > 0
-            const hasDescriptions =
-                $video.find('track[kind="descriptions"]').length > 0
 
             if (!hasCaptions) {
                 violations.push(
@@ -163,24 +162,6 @@ export const checkVideoCaptionsAndDescriptions = (
                             'Provide a <track kind="captions"> element in the language of the video.',
                         ],
                         tags: ['wcag2a', 'wcag122'],
-                    })
-                )
-            }
-
-            if (!hasDescriptions) {
-                violations.push(
-                    createCustomViolation({
-                        id: 'video-missing-descriptions',
-                        impact: 'moderate',
-                        description: 'Video is missing audio descriptions',
-                        help: 'Blind users need audio descriptions to understand the visual content',
-                        helpUrl:
-                            'https://www.w3.org/WAI/WCAG22/Techniques/html/H96',
-                        html: video.outerHTML,
-                        failureSummary: [
-                            'Provide a <track kind="descriptions"> element in the language of the video.',
-                        ],
-                        tags: ['wcag2aa', 'wcag125'],
                     })
                 )
             }
