@@ -9,7 +9,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     //  18:38     1173 tests      946 passing      227 failing
 
     // custom checks
-    //  24:02     1173 tests      963 passing      210 failing
+    //  26:25     1173 tests      969 passing      204 failing
 
     const customActMapping: Record<string, string> = {
         '23a2a8': 'bad-alt-image',
@@ -48,7 +48,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
 
     benchmarkData.testcases
         // .slice(900, 1000) // next up
-        .filter((tc: W3CActTestCaseType) => tc.ruleId === 'b4f0c3')
+        // .filter((tc: W3CActTestCaseType) => tc.ruleId === 'b4f0c3')
         // .slice(7, 11)
         .forEach((tc: W3CActTestCaseType) => {
             it(`Benchmark ${tc.testcaseTitle}`, () => {
