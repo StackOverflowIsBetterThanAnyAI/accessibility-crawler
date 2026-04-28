@@ -5,7 +5,9 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "lint": "eslint ."
+        "lint": "eslint .",
+        "cy:run-crawler": "cypress run --spec cypress/e2e/crawler-separated.cy.ts",
+        "cy:run-audit": "cypress run --spec cypress/e2e/audit-separated.cy.ts"
     },
     "dependencies": {
         "franc": "^6.2.0",
