@@ -435,7 +435,7 @@ export const checkConflictDecorativeRole = (callback: CustomAuditCallback) => {
                             'Element has role="presentation" or "none" but also a text alternative',
                         help: 'Decorative elements should not have an accessible name to avoid confusing assistive technologies',
                         helpUrl:
-                            'https://www.w3.org/WAI/WCAG22/Techniques/failures/F38',
+                            'https://www.w3.org/WAI/standards-guidelines/act/rules/46ca7f/proposed/',
                         html: el.outerHTML,
                         failureSummary: [
                             'Remove the aria-label/-labelledby, title or non-empty alt attribute if the element is purely decorative.',
@@ -466,7 +466,7 @@ export const checkConflictDecorativeRole = (callback: CustomAuditCallback) => {
                             'Image has an empty alt attribute but also a text alternative',
                         help: 'Decorative elements should not have an accessible name to avoid confusing assistive technologies',
                         helpUrl:
-                            'https://www.w3.org/WAI/standards-guidelines/act/rules/46ca7f/',
+                            'https://www.w3.org/WAI/standards-guidelines/act/rules/46ca7f/proposed/',
                         html: el.outerHTML,
                         failureSummary: [
                             'Remove the non-empty alt attribute if the element is actually important.',
@@ -506,22 +506,42 @@ export const checkFirstValidMetaRefresh = (callback: CustomAuditCallback) => {
             }
         })
 
-        if (firstValidElement && detectedDelay > 72000) {
+        if (detectedDelay > 0 && detectedDelay <= 72000) {
             violations.push(
                 createCustomViolation({
-                    id: 'meta-refresh-delay',
+                    id: 'meta-refresh-delay-a',
                     impact: 'serious',
                     description: `The first valid meta refresh has a delay of ${detectedDelay} seconds`,
-                    help: 'Delayed refreshes must not exceed 72,000 seconds (20 hours)',
-                    html: (firstValidElement as HTMLElement).outerHTML,
+                    help: 'The meta element should not be used for delayed redirecting or refreshing',
+                    html: (firstValidElement! as HTMLElement).outerHTML,
                     helpUrl:
-                        'https://www.w3.org/WAI/WCAG21/Techniques/failures/F40',
+                        'https://www.w3.org/WAI/standards-guidelines/act/rules/bc659a/proposed/',
                     failureSummary: [
-                        'The delay specified in <meta http-equiv="refresh"> must not exceed the 72,000-second limit.',
+                        'The delay specified in <meta http-equiv="refresh"> must either be 0 or larger than 72,000 seconds.',
                         'To pass level A: Use a server-side redirect or set the delay to 0.',
                         'To pass level AAA: Avoid any automatic refresh entirely.',
                     ],
                     tags: ['wcag2a', 'wcag221'],
+                })
+            )
+        }
+
+        if (detectedDelay > 0) {
+            violations.push(
+                createCustomViolation({
+                    id: 'meta-refresh-delay-aaa',
+                    impact: 'serious',
+                    description: `The first valid meta refresh has a delay of ${detectedDelay} seconds`,
+                    help: 'The meta element must not be used for delayed redirecting or refreshing',
+                    html: (firstValidElement! as HTMLElement).outerHTML,
+                    helpUrl:
+                        'https://www.w3.org/WAI/standards-guidelines/act/rules/bisz58/proposed/',
+                    failureSummary: [
+                        'The delay specified in <meta http-equiv="refresh"> must not exceed the 0-second limit.',
+                        'To pass level A: Use a server-side redirect or set the delay to 0.',
+                        'To pass level AAA: Avoid any automatic refresh entirely.',
+                    ],
+                    tags: ['wcag2aa', 'wcag224'],
                 })
             )
         }
@@ -829,7 +849,7 @@ export const checkLanguageMismatch = (callback: CustomAuditCallback) => {
                         description: `The declared language "${declaredLang}" does not match the detected language`,
                         help: 'The text appears to be in a different language than specified',
                         helpUrl:
-                            'https://www.w3.org/WAI/WCAG22/Understanding/language-of-parts.html',
+                            'https://www.w3.org/WAI/standards-guidelines/act/rules/off6ek/proposed/',
                         html: el.outerHTML,
                         failureSummary: [
                             `Declared lang attribute: "${declaredLang}"`,
@@ -877,7 +897,8 @@ export const checkPrimaryLanguageMismatch = (callback: CustomAuditCallback) => {
                     impact: 'serious',
                     description: `The declared language "${declaredLang}" does not match the detected language`,
                     help: 'The site appears to be in a different language than specified',
-                    helpUrl: '',
+                    helpUrl:
+                        'https://www.w3.org/WAI/standards-guidelines/act/rules/ucwvc8/proposed/',
                     html: $html[0].outerHTML.substring(0, 32) + '...',
                     failureSummary: [
                         `Declared lang attribute: "${declaredLang}"`,
