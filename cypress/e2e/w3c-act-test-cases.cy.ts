@@ -7,23 +7,29 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     const benchmarkData = require('../fixtures/testcases.json')
 
     // axe checks
-    //  18:56     1172 tests      946 passing      226 failing
+    // 1172     946       226
+    // 459      455       3     9e45ec #5, 9e45ec #6, 24afc2 #6
+    // 382      162       220
+    // 331      328       3     9e45ec #2, 24afc2 #2, 0ssw9k #5
 
     // custom checks
-    //  23:12     1172 tests      969 passing      203 failing
+    // 1172     970       202
+    // 459      455       3     9e45ec #5, 9e45ec #6, 24afc2 #6
+    // 382      186       196
+    // 331      328       3     9e45ec #2, 24afc2 #2, 0ssw9k #5
 
     const customActMapping: Record<string, string> = {
         '23a2a8': 'bad-alt-image',
         qt1vmo: 'bad-alt-image',
         '59796f': 'bad-alt-input-image',
         '46ca7f': 'conflict-decorative-role',
-        bisz58: 'meta-refresh-delay',
+        bisz58: 'meta-refresh-delay-aaa',
+        b4f0c3: 'meta-valid-viewport',
         ffd0e9: 'non-empty-heading',
         '2t702h': 'details-summary-name',
         kb1m8s: 'prohibited-aria-naming',
         off6ek: 'language-mismatch',
         ucwvc8: 'primary-language-mismatch',
-        b4f0c3: 'meta-valid-viewport',
     }
 
     const actToAxeMap: Record<string, string[]> = {}
@@ -59,11 +65,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
                 const targetAxeRuleIds = actToAxeMap[tc.ruleId] || []
 
                 const targetIssue = errorList.find((error) =>
-                    targetAxeRuleIds.some(
-                        (id) =>
-                            error.id === id ||
-                            (error.id && error.id.includes(id))
-                    )
+                    targetAxeRuleIds.some((id) => error.id === id)
                 )
 
                 const targetIssueFound = !!targetIssue
