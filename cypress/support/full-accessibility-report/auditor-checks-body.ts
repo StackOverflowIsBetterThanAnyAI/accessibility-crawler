@@ -10,7 +10,9 @@ export const checkBadAltTextImage = (
     const badAltPatterns = [
         /\.(jpg|jpeg|png|gif|tiff|raw|svg|webp|avif)$/i,
         /(graphic|picture|image|photo|icon)/i,
+        /(grafik|abbildung|bild|foto|symbol)/i,
         /placeholder/i,
+        /platzhalter/i,
         /^[0-9]+$/,
         /^[^a-z0-9]+$/i,
         /^.{1}$/,
