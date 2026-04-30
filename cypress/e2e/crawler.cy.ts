@@ -1,8 +1,8 @@
 import {
     getInternalLinks,
     getSubPages,
-} from '../support/full-accessibility-report/crawler'
-import { removeTrailingSlash } from '../support/full-accessibility-report/url-helper'
+} from '../support/full-accessibility-audit/crawler'
+import { removeTrailingSlash } from '../support/full-accessibility-audit/url-helper'
 
 describe('Crawler: Discovery Phase', () => {
     const baseUrl = Cypress.config('baseUrl')

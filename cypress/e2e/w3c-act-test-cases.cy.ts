@@ -1,6 +1,6 @@
 import axe from 'axe-core'
-import { runAxeAudit } from '../support/full-accessibility-report/auditor'
-import { W3CActTestCaseType } from '../support/full-accessibility-report/types'
+import { runAxeAudit } from '../support/full-accessibility-audit/auditor'
+import { W3CActTestCaseType } from '../support/full-accessibility-audit/types'
 
 describe('System Benchmark: W3C ACT Rules Validation', () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports

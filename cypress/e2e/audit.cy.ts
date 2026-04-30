@@ -1,5 +1,5 @@
-import { runAxeAudit } from '../support/full-accessibility-report/auditor'
-import { addLeadingSlash } from '../support/full-accessibility-report/url-helper'
+import { runAxeAudit } from '../support/full-accessibility-audit/auditor'
+import { addLeadingSlash } from '../support/full-accessibility-audit/url-helper'
 
 describe('Accessibility Audit: Separated Crawler from Auditor', () => {
     const baseUrl = Cypress.config('baseUrl')
