@@ -44,7 +44,9 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     })
 
     Object.entries(customActMapping).forEach(([actId, axeIds]) => {
-        if (!actToAxeMap[actId]) actToAxeMap[actId] = []
+        if (!actToAxeMap[actId]) {
+            actToAxeMap[actId] = []
+        }
 
         if (Array.isArray(axeIds)) {
             actToAxeMap[actId].push(...axeIds)
