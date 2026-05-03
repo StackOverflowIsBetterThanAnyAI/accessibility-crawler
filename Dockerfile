@@ -9,4 +9,4 @@ COPY . .
 
 ENV CYPRESS_BASE_URL=http://localhost:5173
 
-CMD ["npm", "run", "cy:run-audit"]
+CMD npm run cy:run-crawler && npm run cy:run-audit
