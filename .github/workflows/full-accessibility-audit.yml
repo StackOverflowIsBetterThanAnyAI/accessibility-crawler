@@ -15,7 +15,7 @@ jobs:
 
       - name: Install Dependencies & Start App
         run: |
-          npm install
+          npm ci
           npm run dev -- --host &
 
       - name: Run Full Accessibility Audit With Docker
