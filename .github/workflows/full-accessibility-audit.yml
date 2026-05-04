@@ -1,37 +1,62 @@
 name: Full Accessibility Audit
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
-    audit:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout Repository
-              uses: actions/checkout@v4
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '22'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
-            - name: Install Dependencies & Start App
-              run: |
-                  npm ci
-                  npx vite --host &
+      - name: Install Dependencies & Start App
+        run: |
+          npm ci
+          echo "Starting Vite Server"
+          npx vite --host &
 
-            - name: Run Full Accessibility Audit With Docker
-              run: |
-                  docker build -t full-accessibility-audit .
+          echo "Waiting for local Port 5173"
+          npx wait-on http://localhost:5173 --timeout 60000
+          echo "Vite can be reached locally"
 
-                  docker run --rm \
-                    -e CYPRESS_BASE_URL="http://host.docker.internal:5173" \
-                    --add-host=host.docker.internal:host-gateway \
-                    -v ${{ github.workspace }}/reports:/app/cypress/fixtures \
-                    full-accessibility-audit \
-                    sh -c "npx wait-on http://host.docker.internal:5173 && npm run cy:run-crawler && npm run cy:run-audit"
+      - name: Debug Network Info
+        run: |
+          echo "Host IP Information:"
+          ip addr | grep eth0
+          echo "Check if Port 5173 can be reached"
+          sudo lsof -i :5173 || echo "Port 5173 cannot be reached"
 
-            - name: Upload Report Artifacts
-              uses: actions/upload-artifact@v4
-              if: always()
-              with:
-                  name: full-accessibility-fixtures
-                  path: fixtures/
+      - name: Run Full Accessibility Audit With Docker
+        run: |
+          mkdir -p reports
+          echo "Building Docker Image"
+          docker build -t full-accessibility-audit .
+          echo "Build successful"
+
+          echo "Starting Docker Container Audit"
+          docker run --rm \
+            --ipc=host \
+            -e CYPRESS_BASE_URL="http://host.docker.internal:5173" \
+            --add-host=host.docker.internal:host-gateway \
+            -v ${{ github.workspace }}/reports:/app/cypress/fixtures \
+            full-accessibility-audit \
+            sh -c "
+              echo 'Container is waiting for Host Connection' && \
+              npx wait-on http://host.docker.internal:5173 --timeout 60000 && \
+              echo 'Container can communicate with Host' && \
+              echo 'Starting Crawler' && \
+              npm run cy:run-crawler && \
+              echo 'Starting Accessibility Audit' && \
+              npm run cy:run-audit
+            "
+
+      - name: Upload Report Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-accessibility-reports
+          path: reports/
