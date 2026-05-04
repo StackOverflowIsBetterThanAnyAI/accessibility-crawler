@@ -5,8 +5,6 @@ export const checkLanguageCompatibility = (
     detected3: string
 ): boolean => {
     const baseDeclared = declared.split('-')[0]
-    if (Iso6393To1[detected3]) {
-        return Iso6393To1[detected3] === baseDeclared
-    }
-    return true
+    const detected = Iso6393To1[detected3]
+    return detected ? detected === baseDeclared : true
 }
