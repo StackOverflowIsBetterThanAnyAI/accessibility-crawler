@@ -33,24 +33,21 @@ jobs:
       - name: Run Full Accessibility Audit With Docker
         run: |
           mkdir -p reports
-          echo "Building Docker Image"
           docker build -t full-accessibility-audit .
-          echo "Build successful"
 
-          echo "Starting Docker Container Audit"
+          GATEWAY_IP=$(docker network inspect bridge -f '{{ (index .IPAM.Config 0).Gateway }}')
+          echo "Gateway IP is: $GATEWAY_IP"
+
           docker run --rm \
             --ipc=host \
-            -e CYPRESS_BASE_URL="http://host.docker.internal:5173" \
+            -e CYPRESS_BASE_URL="http://$GATEWAY_IP:5173" \
             --add-host=host.docker.internal:host-gateway \
             -v ${{ github.workspace }}/reports:/app/cypress/fixtures \
             full-accessibility-audit \
             sh -c "
-              echo 'Container is waiting for Host Connection' && \
-              npx wait-on http://host.docker.internal:5173 --timeout 60000 && \
-              echo 'Container can communicate with Host' && \
-              echo 'Starting Crawler' && \
+              echo 'Testing connection to $GATEWAY_IP:5173' && \
+              npx wait-on http://$GATEWAY_IP:5173 --timeout 60000 && \
               npm run cy:run-crawler && \
-              echo 'Starting Accessibility Audit' && \
               npm run cy:run-audit
             "
 
