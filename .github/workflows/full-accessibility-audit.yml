@@ -5,7 +5,7 @@ env:
   APP_PORT: 5173
 
 jobs:
-  audit:
+  Full_Accessibility_Audit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
