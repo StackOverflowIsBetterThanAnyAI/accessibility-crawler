@@ -1,6 +1,9 @@
 name: Full Accessibility Audit
 on: [ push, pull_request ]
 
+env:
+  APP_PORT: 5173
+
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -17,10 +20,10 @@ jobs:
         run: |
           npm ci
           echo "Starting Vite Server"
-          npx vite --host &
+          npx vite --port $APP_PORT --host &
 
-          echo "Waiting for local Port 5173"
-          npx wait-on http://localhost:5173 --timeout 60000
+          echo "Waiting for local Port $APP_PORT"
+          npx wait-on http://localhost:$APP_PORT --timeout 60000
           echo "Vite can be reached locally"
 
       - name: Debug Network Info
@@ -40,13 +43,13 @@ jobs:
 
           docker run --rm \
             --ipc=host \
-            -e CYPRESS_BASE_URL="http://$GATEWAY_IP:5173" \
+            -e CYPRESS_BASE_URL="http://$GATEWAY_IP:$APP_PORT" \
             --add-host=host.docker.internal:host-gateway \
             -v ${{ github.workspace }}/reports:/app/cypress/fixtures \
             full-accessibility-audit \
             sh -c "
-              echo 'Testing connection to $GATEWAY_IP:5173' && \
-              npx wait-on http://$GATEWAY_IP:5173 --timeout 60000 && \
+              echo 'Waiting for connection to $GATEWAY_IP:$APP_PORT' && \
+              npx wait-on http://$GATEWAY_IP:$APP_PORT --timeout 60000 && \
               npm run cy:run-crawler && \
               npm run cy:run-audit
             "
