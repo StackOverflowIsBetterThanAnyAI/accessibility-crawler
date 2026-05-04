@@ -8,13 +8,13 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
 
     // axe checks
     // 1172     946       226
-    // 459      455       3     9e45ec #5, 9e45ec #6, 24afc2 #6
+    // 459      456       3     9e45ec #5, 9e45ec #6, 24afc2 #6
     // 382      162       220
     // 331      328       3     9e45ec #2, 24afc2 #2, 0ssw9k #5
 
     // custom checks
     // 1172     970       202
-    // 459      455       3     9e45ec #5, 9e45ec #6, 24afc2 #6
+    // 459      456       3     9e45ec #5, 9e45ec #6, 24afc2 #6
     // 382      186       196
     // 331      328       3     9e45ec #2, 24afc2 #2, 0ssw9k #5
 
