@@ -53,7 +53,7 @@ export const checkPrimaryLanguageMismatch = (
         )
     }
 
-    if (violations.length > 0) {
+    if (violations.length) {
         callback(violations)
     }
 }
