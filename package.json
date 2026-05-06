@@ -20,6 +20,8 @@
         "@babel/core": "^7.29.0",
         "@eslint/js": "^9.39.4",
         "@rolldown/plugin-babel": "^0.2.0",
+        "@siteimprove/alfa-cypress": "^0.82.1",
+        "@siteimprove/alfa-test-utils": "^0.82.1",
         "@types/babel__core": "^7.20.5",
         "@types/jquery": "^4.0.0",
         "@types/node": "^24.12.0",
