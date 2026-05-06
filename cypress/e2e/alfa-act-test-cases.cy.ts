@@ -3,6 +3,7 @@ import { Audit } from '@siteimprove/alfa-test-utils'
 import { W3CActTestCaseType } from '../support/full-accessibility-audit/types'
 
 describe('System Benchmark: W3C ACT Rules Validation (Alfa)', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const benchmarkData = require('../fixtures/testcases.json')
 
     // 1172      676      496
