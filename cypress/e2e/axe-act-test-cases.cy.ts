@@ -13,9 +13,9 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     // 331      328       3     9e45ec #2, 24afc2 #2, 0ssw9k #5
 
     // custom checks
-    // 1172     970       202
+    // 1172     975       197
     // 459      456       3     9e45ec #5, 9e45ec #6, 24afc2 #6
-    // 382      186       196
+    // 382      191       191
     // 331      328       3     9e45ec #2, 24afc2 #2, 0ssw9k #5
 
     const customActMapping: Record<string, string> = {
@@ -30,6 +30,7 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
         kb1m8s: 'prohibited-aria-naming',
         off6ek: 'language-mismatch',
         ucwvc8: 'primary-language-mismatch',
+        '2ee8b8': 'label-in-name',
     }
 
     const actToAxeMap: Record<string, string[]> = {}
@@ -91,10 +92,9 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
                             `Target rule "${targetAxeRuleIds.join(', ')}" correctly detected.`
                         )
                     } else {
-                        const errorMsg =
-                            targetAxeRuleIds.length > 0
-                                ? `Expected specific rule "${targetAxeRuleIds.join(', ')}" but only found [${detectedIds}].`
-                                : `ACT rule expected a failure but none was detected.`
+                        const errorMsg = targetAxeRuleIds.length
+                            ? `Expected specific rule "${targetAxeRuleIds.join(', ')}" but only found [${detectedIds}].`
+                            : `ACT rule expected a failure but none was detected.`
 
                         throw new Error(`${errorMsg}\n${contextInfo}`)
                     }

@@ -36,12 +36,12 @@ export const checkBadAltTextImage = (
                         'https://www.w3.org/WAI/WCAG22/Techniques/failures/F30',
                     html: img.outerHTML,
                     failureSummary: [
-                        `Change the alt attribute to describe the purpose of the image.`,
-                        `Do not use filenames (like .jpg).`,
-                        `Do not use generic words like "image" or "placeholder".`,
-                        `Do not use only numbers.`,
-                        `Do not use only special characters or symbols.`,
-                        `Do not use only one character.`,
+                        'Change the alt attribute to describe the purpose of the image.',
+                        'Do not use filenames (like .jpg).',
+                        'Do not use generic words like "image" or "placeholder".',
+                        'Do not use only numbers.',
+                        'Do not use only special characters or symbols.',
+                        'Do not use only one character.',
                     ],
                     tags: ['wcag2a', 'wcag111'],
                 })
@@ -124,12 +124,12 @@ export const checkAltTextInputImage = (
                         'https://www.w3.org/WAI/WCAG22/Techniques/failures/F30',
                     html: img.outerHTML,
                     failureSummary: [
-                        `Change the alt attribute to describe the purpose of the image.`,
-                        `Do not use filenames (like .jpg).`,
-                        `Do not use generic words like "image" or "placeholder".`,
-                        `Do not use only numbers.`,
-                        `Do not use only special characters or symbols.`,
-                        `Do not use only one character.`,
+                        'Change the alt attribute to describe the purpose of the image.',
+                        'Do not use filenames (like .jpg).',
+                        'Do not use generic words like "image" or "placeholder".',
+                        'Do not use only numbers.',
+                        'Do not use only special characters or symbols.',
+                        'Do not use only one character.',
                     ],
                     tags: ['wcag2a', 'wcag111'],
                 })
@@ -189,8 +189,7 @@ export const checkFieldsetLegend = (
         const firstChild = $fieldset.children().first()
 
         const hasMultipleLegends = legend.length > 1
-        const hasValidLegend =
-            legend.length > 0 && legend.text().trim().length > 0
+        const hasValidLegend = legend.length && legend.text().trim().length
         const isLegendFirst = firstChild.is('legend')
 
         if (!hasValidLegend || !isLegendFirst || hasMultipleLegends) {
@@ -316,8 +315,8 @@ export const checkNonEmptyHeading = (
                 createCustomViolation({
                     id: 'non-empty-heading',
                     impact: 'serious',
-                    description: 'Heading has no accessible name.',
-                    help: 'Headings must have text or an aria-label to be useful for screen reader users.',
+                    description: 'Heading has no accessible name',
+                    help: 'Headings must have text or an aria-label to be useful for screen reader users',
                     helpUrl:
                         'https://www.w3.org/WAI/WCAG22/Techniques/general/G130',
                     html: el.outerHTML,
@@ -511,7 +510,7 @@ export const checkDetailsSummary = (
         }
 
         if (
-            ($summary.length > 0 && accessibleName === '') ||
+            ($summary.length && accessibleName === '') ||
             decorativeRoleConflict
         ) {
             violations.push(
@@ -573,7 +572,7 @@ export const checkProhibitedAria = (
         if (
             $el.is(':hidden') ||
             $el.attr('aria-hidden') === 'true' ||
-            $el.closest('[hidden]').length > 0
+            $el.closest('[hidden]').length
         ) {
             return
         }
@@ -681,11 +680,116 @@ export const checkLanguageMismatch = (
                         'https://www.w3.org/WAI/standards-guidelines/act/rules/off6ek/proposed/',
                     html: el.outerHTML,
                     failureSummary: [
-                        `Declared lang attribute: "${declaredLang}"`,
-                        `Detected language (NLP): "${detectedLang3}"`,
+                        `Declared lang attribute: "${declaredLang}".`,
+                        `Detected language (NLP): "${detectedLang3}".`,
                         'Ensure the "lang" attribute correctly identifies the primary language of the text content.',
                     ],
                     tags: ['wcag2aa', 'wcag312'],
+                })
+            )
+        }
+    })
+
+    if (violations.length) {
+        callback(violations)
+    }
+}
+
+export const checkLabelInNameStrict = (
+    $body: JQuery<HTMLElement>,
+    callback: CustomAuditCallback
+) => {
+    const violations: CustomViolationReturnType[] = []
+
+    const widgetRoles = [
+        'button',
+        'checkbox',
+        'link',
+        'menuitem',
+        'menuitemcheckbox',
+        'menuitemradio',
+        'option',
+        'radio',
+        'switch',
+        'tab',
+        'treeitem',
+    ]
+
+    $body.find('[aria-label], [aria-labelledby]').each((_, el) => {
+        const $el = Cypress.$(el)
+
+        if ($el.is(':hidden') || $el.css('visibility') === 'hidden') {
+            return
+        }
+
+        const tagName = el.tagName.toUpperCase()
+        const role = $el.attr('role') || tagName.toLowerCase()
+
+        const isSupportedWidget =
+            widgetRoles.includes(role) ||
+            (tagName === 'A' && $el.attr('href')) ||
+            tagName === 'BUTTON'
+
+        if (!isSupportedWidget) {
+            return
+        }
+
+        const visibleText = $el.text().trim()
+        if (visibleText.length <= 1) {
+            return
+        }
+
+        const hasIconFont = () => {
+            const font = $el.css('font-family').toLowerCase()
+            return (
+                font.includes('icon') ||
+                font.includes('symbol') ||
+                font.includes('material')
+            )
+        }
+        if (hasIconFont()) {
+            return
+        }
+
+        let accessibleName = ''
+        if ($el.attr('aria-label')) {
+            accessibleName = $el.attr('aria-label') || ''
+        } else if ($el.attr('aria-labelledby')) {
+            const ids = ($el.attr('aria-labelledby') || '').split(/\s+/)
+            accessibleName = ids
+                .map((id) => {
+                    const $target = $body.find(`#${id}`)
+                    return !$target.length ? '' : $target.text()
+                })
+                .filter((text) => text.trim().length)
+                .join(' ')
+        }
+
+        const cleanVisible = visibleText
+            .toLowerCase()
+            .replace(/\s+/g, ' ')
+            .trim()
+        const cleanAccessible = accessibleName
+            .toLowerCase()
+            .replace(/\s+/g, ' ')
+            .trim()
+
+        if (!cleanAccessible.includes(cleanVisible)) {
+            violations.push(
+                createCustomViolation({
+                    id: 'label-in-name',
+                    impact: 'serious',
+                    description: `The visible label "${visibleText}" is not part of the accessible name "${accessibleName}"`,
+                    help: 'The visible text of a widget must be included in the accessible name',
+                    helpUrl:
+                        'https://www.w3.org/WAI/standards-guidelines/act/rules/2ee8b8/proposed/',
+                    html: el.outerHTML,
+                    failureSummary: [
+                        `Visible Label: "${visibleText}".`,
+                        `Accessible Name: "${accessibleName}".`,
+                        'The visible text of a widget must be included in the accessible name.',
+                    ],
+                    tags: ['wcag2a', 'wcag253'],
                 })
             )
         }
