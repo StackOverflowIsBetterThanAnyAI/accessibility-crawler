@@ -38,7 +38,7 @@ describe('Crawler: Discovery Phase', () => {
             return false
         }
 
-        if (included.length > 0) {
+        if (included.length) {
             return included.some((pattern) =>
                 convertToRegex(pattern).test(normalized)
             )
