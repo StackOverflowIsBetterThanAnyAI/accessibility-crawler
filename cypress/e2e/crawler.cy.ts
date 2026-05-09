@@ -6,18 +6,70 @@ import { removeTrailingSlash } from '../support/full-accessibility-audit/url-hel
 
 describe('Crawler: Discovery Phase', () => {
     const baseUrl = Cypress.config('baseUrl')
+    const sitemapPath = 'cypress/fixtures/sitemap.json'
+
     if (!baseUrl) {
         throw new Error('baseUrl is not defined. Please check your config.')
     }
 
+    let sitemapConfig = {
+        included: [] as string[],
+        excluded: [] as string[],
+    }
+
     const visitedUrls = new Set<string>()
+    const auditUrls = new Set<string>()
     const queue: string[] = ['/']
 
-    it('finds all pages and saves them to sitemap.json', () => {
+    const convertToRegex = (pattern: string) => {
+        let regexStr = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+        regexStr = regexStr.replace(/\*/g, '.*')
+        return new RegExp(`^${regexStr}$`)
+    }
+
+    const isPathAllowedForAudit = (path: string): boolean => {
+        const { included, excluded } = sitemapConfig
+        const normalized = removeTrailingSlash(path)
+
+        const isExcluded = excluded.some((pattern) =>
+            convertToRegex(pattern).test(normalized)
+        )
+        if (isExcluded) return false
+
+        if (included.length > 0) {
+            return included.some((pattern) =>
+                convertToRegex(pattern).test(normalized)
+            )
+        }
+        return true
+    }
+
+    it('crawls all pages but filters sitemap.json based on config', () => {
+        cy.exec('cmd /c if exist "' + sitemapPath + '" echo exists', {
+            failOnNonZeroExit: false,
+        }).then((result) => {
+            if (result.stdout.trim() === 'exists') {
+                cy.readFile(sitemapPath).then((existingSitemap) => {
+                    if (existingSitemap && existingSitemap.config) {
+                        sitemapConfig = existingSitemap.config
+
+                        cy.log(
+                            'Existing config loaded:',
+
+                            JSON.stringify(sitemapConfig)
+                        )
+                    }
+                })
+            } else {
+                cy.log('No existing sitemap found. Generating empty config.')
+            }
+        })
+
         const processQueue = () => {
             if (!queue.length) {
-                cy.writeFile('cypress/fixtures/sitemap.json', {
-                    urls: Array.from(visitedUrls),
+                cy.writeFile(sitemapPath, {
+                    config: sitemapConfig,
+                    urls: Array.from(auditUrls),
                     generatedAt: new Date().toISOString(),
                 })
                 return
@@ -27,7 +79,6 @@ describe('Crawler: Discovery Phase', () => {
             if (!currentPath) {
                 return
             }
-
             const normalizedPath = removeTrailingSlash(currentPath)
 
             if (visitedUrls.has(normalizedPath)) {
@@ -36,6 +87,11 @@ describe('Crawler: Discovery Phase', () => {
             }
 
             visitedUrls.add(normalizedPath)
+
+            if (isPathAllowedForAudit(normalizedPath)) {
+                auditUrls.add(normalizedPath)
+            }
+
             const fullUrl = currentPath.startsWith('http')
                 ? currentPath
                 : baseUrl + currentPath
@@ -46,11 +102,11 @@ describe('Crawler: Discovery Phase', () => {
                         const [
                             fullPathWithQuery,
                             isPathInQueue,
-                            normalizedPath,
+                            nextNormalizedPath,
                         ] = getSubPages(baseUrl, link, queue)
 
                         if (
-                            !visitedUrls.has(normalizedPath) &&
+                            !visitedUrls.has(nextNormalizedPath) &&
                             !isPathInQueue
                         ) {
                             queue.push(fullPathWithQuery)
