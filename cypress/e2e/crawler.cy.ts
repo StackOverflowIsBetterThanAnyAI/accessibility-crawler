@@ -34,7 +34,9 @@ describe('Crawler: Discovery Phase', () => {
         const isExcluded = excluded.some((pattern) =>
             convertToRegex(pattern).test(normalized)
         )
-        if (isExcluded) return false
+        if (isExcluded) {
+            return false
+        }
 
         if (included.length > 0) {
             return included.some((pattern) =>
