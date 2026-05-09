@@ -28,22 +28,12 @@ describe('Crawler: Discovery Phase', () => {
     }
 
     const isPathAllowedForAudit = (path: string): boolean => {
-        const { included, excluded } = sitemapConfig
+        const { excluded } = sitemapConfig
         const normalized = removeTrailingSlash(path)
 
-        const isExcluded = excluded.some((pattern) =>
+        return !excluded.some((pattern) =>
             convertToRegex(pattern).test(normalized)
         )
-        if (isExcluded) {
-            return false
-        }
-
-        if (included.length) {
-            return included.some((pattern) =>
-                convertToRegex(pattern).test(normalized)
-            )
-        }
-        return true
     }
 
     it('crawls all pages but filters sitemap.json based on config', () => {
