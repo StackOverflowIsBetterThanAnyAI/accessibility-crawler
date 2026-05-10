@@ -42,7 +42,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         cy.log(`Total issues found: ${totalIssues}`)
         cy.log('----------------------------')
 
-        if (totalIssues === 0) {
+        if (!totalIssues) {
             cy.log(
                 'All subpages passed the accessibility audit without any issues.'
             )

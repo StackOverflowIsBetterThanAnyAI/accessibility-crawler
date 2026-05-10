@@ -226,7 +226,7 @@ export const checkHeadingOrder = (
     const violations: CustomViolationReturnType[] = []
     const headings = $body.find('h1, h2, h3, h4, h5, h6')
 
-    if (headings.length === 0) {
+    if (!headings.length) {
         return
     }
 
@@ -565,7 +565,7 @@ export const checkProhibitedAria = (
             el.hasAttribute(attr)
         )
 
-        if (presentProhibitedAttrs.length === 0) {
+        if (!presentProhibitedAttrs.length) {
             return
         }
 

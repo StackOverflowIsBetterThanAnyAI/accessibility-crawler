@@ -15,7 +15,7 @@ export const checkPrimaryLanguageMismatch = (
     }
 
     const $body = Cypress.$('body')
-    if ($body.length === 0) {
+    if (!$body.length) {
         return
     }
 
