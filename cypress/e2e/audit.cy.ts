@@ -36,11 +36,21 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
 
     it('--- Accessibility Report Summary ---', () => {
         const totalIssues = accessibilityErrors.length
+        const reportPath = 'cypress/fixtures/full-audit-report.json'
 
         cy.log('----------------------------')
         cy.log(`Amount of checked pages: ${sitemap.urls.length}`)
         cy.log(`Total issues found: ${totalIssues}`)
         cy.log('----------------------------')
+
+        cy.writeFile(reportPath, {
+            summary: {
+                totalCheckedPages: sitemap.urls.length,
+                totalIssues: totalIssues,
+                timestamp: new Date().toISOString(),
+            },
+            issues: accessibilityErrors,
+        })
 
         if (!totalIssues) {
             cy.log(
