@@ -2,7 +2,10 @@ import {
     getInternalLinks,
     getSubPages,
 } from '../support/full-accessibility-audit/crawler'
-import { removeTrailingSlash } from '../support/full-accessibility-audit/url-helper'
+import {
+    addLeadingSlash,
+    removeTrailingSlash,
+} from '../support/full-accessibility-audit/url-helper'
 
 describe('Crawler: Discovery Phase', () => {
     const baseUrl = Cypress.config('baseUrl')
@@ -24,15 +27,21 @@ describe('Crawler: Discovery Phase', () => {
     const convertToRegex = (pattern: string) => {
         let regexStr = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&')
         regexStr = regexStr.replace(/\*/g, '.*')
-        return new RegExp(`^${regexStr}$`)
+        return new RegExp(`^${regexStr}$`, 'i')
     }
 
     const isPathAllowedForAudit = (path: string): boolean => {
         const { excluded } = sitemapConfig
-        const normalized = removeTrailingSlash(path)
+        const normalized = removeTrailingSlash(path.trim())
 
         return !excluded.some((pattern) =>
             convertToRegex(pattern).test(normalized)
+        )
+    }
+
+    const cleanUpExistingPattern = (pattern: string) => {
+        return removeTrailingSlash(
+            addLeadingSlash(pattern.replace(/^\*|\*$/g, '').trim())
         )
     }
 
@@ -44,10 +53,13 @@ describe('Crawler: Discovery Phase', () => {
                 cy.readFile(sitemapPath).then((existingSitemap) => {
                     if (existingSitemap && existingSitemap.config) {
                         sitemapConfig = existingSitemap.config
-
+                        for (const item of sitemapConfig.included) {
+                            if (isPathAllowedForAudit(item)) {
+                                auditUrls.add(cleanUpExistingPattern(item))
+                            }
+                        }
                         cy.log(
                             'Existing config loaded:',
-
                             JSON.stringify(sitemapConfig)
                         )
                     }
@@ -56,59 +68,60 @@ describe('Crawler: Discovery Phase', () => {
                 cy.log('No existing sitemap found. Generating empty config.')
             }
         })
-
-        const processQueue = () => {
-            if (!queue.length) {
-                cy.writeFile(sitemapPath, {
-                    config: sitemapConfig,
-                    urls: Array.from(auditUrls),
-                    generatedAt: new Date().toISOString(),
-                })
-                return
-            }
-
-            const currentPath = queue.shift()
-            if (!currentPath) {
-                return
-            }
-            const normalizedPath = removeTrailingSlash(currentPath)
-
-            if (visitedUrls.has(normalizedPath)) {
-                processQueue()
-                return
-            }
-
-            visitedUrls.add(normalizedPath)
-
-            if (isPathAllowedForAudit(normalizedPath)) {
-                auditUrls.add(normalizedPath)
-            }
-
-            const fullUrl = currentPath.startsWith('http')
-                ? currentPath
-                : baseUrl + currentPath
-
-            cy.visit(fullUrl).then(() => {
-                getInternalLinks(baseUrl).then((newLinks) => {
-                    newLinks.forEach((link) => {
-                        const [
-                            fullPathWithQuery,
-                            isPathInQueue,
-                            nextNormalizedPath,
-                        ] = getSubPages(baseUrl, link, queue)
-
-                        if (
-                            !visitedUrls.has(nextNormalizedPath) &&
-                            !isPathInQueue
-                        ) {
-                            queue.push(fullPathWithQuery)
-                        }
+        cy.then(() => {
+            const processQueue = () => {
+                if (!queue.length) {
+                    cy.writeFile(sitemapPath, {
+                        config: sitemapConfig,
+                        urls: Array.from(auditUrls),
+                        generatedAt: new Date().toISOString(),
                     })
+                    return
+                }
 
+                const currentPath = queue.shift()
+                if (!currentPath) {
+                    return
+                }
+                const normalizedPath = removeTrailingSlash(currentPath)
+
+                if (visitedUrls.has(normalizedPath)) {
                     processQueue()
+                    return
+                }
+
+                visitedUrls.add(normalizedPath)
+
+                if (isPathAllowedForAudit(normalizedPath)) {
+                    auditUrls.add(normalizedPath)
+                }
+
+                const fullUrl = currentPath.startsWith('http')
+                    ? currentPath
+                    : baseUrl + currentPath
+
+                cy.visit(fullUrl).then(() => {
+                    getInternalLinks(baseUrl).then((newLinks) => {
+                        newLinks.forEach((link) => {
+                            const [
+                                fullPathWithQuery,
+                                isPathInQueue,
+                                nextNormalizedPath,
+                            ] = getSubPages(baseUrl, link, queue)
+
+                            if (
+                                !visitedUrls.has(nextNormalizedPath) &&
+                                !isPathInQueue
+                            ) {
+                                queue.push(fullPathWithQuery)
+                            }
+                        })
+
+                        processQueue()
+                    })
                 })
-            })
-        }
-        processQueue()
+            }
+            processQueue()
+        })
     })
 })
