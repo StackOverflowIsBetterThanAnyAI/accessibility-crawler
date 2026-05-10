@@ -2,7 +2,10 @@ name: Full Accessibility Audit
 on: [push, pull_request]
 
 env:
+  # provide the correct port for your local server
   APP_PORT: 5173
+  # provide the correct port and host flags for your local server
+  START_COMMAND: "npx vite --port 5173 --host"
 
 jobs:
   Full_Accessibility_Audit:
@@ -20,7 +23,7 @@ jobs:
         run: |
           npm ci
           echo "Starting Local Server"
-          npx vite --port $APP_PORT --host &
+          $START_COMMAND &
 
           echo "Waiting for local Port $APP_PORT"
           npx wait-on http://localhost:$APP_PORT --timeout 60000
@@ -30,12 +33,13 @@ jobs:
         run: |
           echo "Host IP Information:"
           ip addr | grep eth0
-          echo "Check if Port 5173 can be reached"
-          sudo lsof -i :5173 || echo "Port 5173 cannot be reached"
+          echo "Check if Port $APP_PORT can be reached"
+          sudo lsof -i :$APP_PORT || echo "Port $APP_PORT cannot be reached"
 
       - name: Run Full Accessibility Audit With Docker
         run: |
           mkdir -p reports
+          cp cypress/fixtures/sitemap.json reports/sitemap.json || echo "No existing sitemap found"
           docker build -t full-accessibility-audit .
 
           GATEWAY_IP=$(docker network inspect bridge -f '{{ (index .IPAM.Config 0).Gateway }}')
