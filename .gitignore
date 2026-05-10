@@ -1,3 +1,3 @@
 /node_modules
-/cypress/fixtures/full-audit-report.json
+/cypress/fixtures/full-accessibility-audit.json
 /cypress/screenshots
