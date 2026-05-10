@@ -1,0 +1,22 @@
+{
+  "config": {
+    "included": [
+      " /test",
+      "*pattern/*"
+    ],
+    "excluded": [
+      "/about/*",
+      "/contact*",
+      "/test*",
+      "/"
+    ]
+  },
+  "urls": [
+    "/pattern",
+    "/four-oh-four",
+    "/about",
+    "/shop",
+    "/shop/product?id=1"
+  ],
+  "generatedAt": "2026-05-10T13:31:00.432Z"
+}
