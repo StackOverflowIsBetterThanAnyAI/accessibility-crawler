@@ -1,5 +1,5 @@
 name: Full Accessibility Audit
-on: [ push, pull_request ]
+on: [push, pull_request]
 
 env:
   APP_PORT: 5173
@@ -19,12 +19,12 @@ jobs:
       - name: Install Dependencies & Start App
         run: |
           npm ci
-          echo "Starting Vite Server"
+          echo "Starting Local Server"
           npx vite --port $APP_PORT --host &
 
           echo "Waiting for local Port $APP_PORT"
           npx wait-on http://localhost:$APP_PORT --timeout 60000
-          echo "Vite can be reached locally"
+          echo "Server can be reached locally"
 
       - name: Debug Network Info
         run: |
