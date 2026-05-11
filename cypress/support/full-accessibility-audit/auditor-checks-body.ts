@@ -142,6 +142,60 @@ export const checkAltTextInputImage = (
     }
 }
 
+export const checkListStructure = (
+    $body: JQuery<HTMLElement>,
+    callback: CustomAuditCallback
+) => {
+    const violations: CustomViolationReturnType[] = []
+
+    $body.find('ul, ol, [role="list"]').each((_, list) => {
+        const $list = Cypress.$(list)
+
+        const role = $list.attr('role')
+        if (role === 'presentation' || role === 'none') {
+            return
+        }
+
+        $list.children().each((__, child) => {
+            const $child = Cypress.$(child)
+
+            if (
+                $child.is('script, template') ||
+                $child.attr('aria-hidden') === 'true' ||
+                $child.css('display') === 'none'
+            ) {
+                return
+            }
+
+            const childRole = $child.attr('role')
+            const isListItem = $child.is('li') || childRole === 'listitem'
+
+            if (!isListItem) {
+                violations.push(
+                    createCustomViolation({
+                        id: 'list-invalid-structure',
+                        impact: 'serious',
+                        description:
+                            'List element contains invalid child elements',
+                        help: 'Elements with a list role must only contain listitem elements.',
+                        helpUrl:
+                            'https://www.w3.org/WAI/WCAG22/Techniques/html/H48',
+                        html: list.outerHTML,
+                        failureSummary: [
+                            'Direct children of a list must be <li> elements or have the role "listitem".',
+                        ],
+                        tags: ['wcag2a', 'wcag131'],
+                    })
+                )
+            }
+        })
+    })
+
+    if (violations.length) {
+        callback(violations)
+    }
+}
+
 export const checkVideoCaptions = (
     $body: JQuery<HTMLElement>,
     callback: CustomAuditCallback
