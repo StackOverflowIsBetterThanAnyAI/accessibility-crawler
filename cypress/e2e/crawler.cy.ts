@@ -46,10 +46,8 @@ describe('Crawler: Discovery Phase', () => {
     }
 
     it('crawls all pages but filters sitemap.json based on config', () => {
-        cy.exec('cmd /c if exist "' + sitemapPath + '" echo exists', {
-            failOnNonZeroExit: false,
-        }).then((result) => {
-            if (result.stdout.trim() === 'exists') {
+        cy.task<boolean>('checkFileExists', sitemapPath).then((exists) => {
+            if (exists) {
                 cy.readFile(sitemapPath).then((existingSitemap) => {
                     if (existingSitemap && existingSitemap.config) {
                         sitemapConfig = existingSitemap.config
