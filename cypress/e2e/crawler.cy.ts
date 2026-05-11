@@ -58,10 +58,7 @@ describe('Crawler: Discovery Phase', () => {
                                 auditUrls.add(cleanUpExistingPattern(item))
                             }
                         }
-                        cy.log(
-                            'Existing config loaded:',
-                            JSON.stringify(sitemapConfig)
-                        )
+                        cy.log('Existing config loaded.')
                     }
                 })
             } else {
