@@ -6,11 +6,6 @@ describe('System Benchmark: W3C ACT Rules Validation (Alfa)', () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const benchmarkData = require('../fixtures/testcases.json')
 
-    // 1172      676      496
-    // 459       190      269
-    // 382       158      224
-    // 331       328      3     8fc3b6 #1, ff89c9 #2, ff89c9 #5
-
     const actToAlfaMap: Record<string, string> = {
         '2779a5': 'sia-r1',
         '23a2a8': 'sia-r2',

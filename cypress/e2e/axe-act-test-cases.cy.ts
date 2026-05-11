@@ -6,18 +6,6 @@ describe('System Benchmark: W3C ACT Rules Validation', () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const benchmarkData = require('../fixtures/testcases.json')
 
-    // axe checks
-    // 1172     946       226
-    // 459      456       3     9e45ec #5, 9e45ec #6, 24afc2 #6
-    // 382      162       220
-    // 331      328       3     9e45ec #2, 24afc2 #2, 0ssw9k #5
-
-    // custom checks
-    // 1172     980       192
-    // 459      456       3     9e45ec #5, 9e45ec #6, 24afc2 #6
-    // 382      196       186
-    // 331      328       3     9e45ec #2, 24afc2 #2, 0ssw9k #5
-
     const customActMapping: Record<string, string> = {
         '23a2a8': 'bad-alt-image',
         qt1vmo: 'bad-alt-image',
