@@ -6,6 +6,7 @@ env:
   APP_PORT: 5173
   # provide the correct port and host flags for your local server
   START_COMMAND: "npx vite --port 5173 --host"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   Full_Accessibility_Audit:
