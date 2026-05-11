@@ -6,6 +6,7 @@ env:
   APP_PORT: 5173
   # provide the correct port and host flags for your local server
   START_COMMAND: "npx vite --port 5173 --host"
+  AUDIT_IMAGE: ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest
 
 jobs:
   Full_Accessibility_Audit:
@@ -14,33 +15,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-
-      - name: Install Dependencies & Start App
+      - name: Start App
         run: |
           npm ci
-          echo "Starting Local Server"
           $START_COMMAND &
-
-          echo "Waiting for local Port $APP_PORT"
           npx wait-on http://localhost:$APP_PORT --timeout 60000
-          echo "Server can be reached locally"
-
-      - name: Debug Network Info
-        run: |
-          echo "Host IP Information:"
-          ip addr | grep eth0
-          echo "Check if Port $APP_PORT can be reached"
-          sudo lsof -i :$APP_PORT || echo "Port $APP_PORT cannot be reached"
 
       - name: Run Full Accessibility Audit With Docker
         run: |
           mkdir -p reports
-          cp cypress/fixtures/sitemap.json reports/sitemap.json || echo "No existing sitemap found"
-          docker build -t full-accessibility-audit .
+          cp cypress/fixtures/sitemap.json reports/sitemap.json || echo '{"config": {"included": [], "excluded": []}, "urls": []}' > reports/sitemap.json
 
           GATEWAY_IP=$(docker network inspect bridge -f '{{ (index .IPAM.Config 0).Gateway }}')
           echo "Gateway IP is: $GATEWAY_IP"
@@ -50,7 +34,7 @@ jobs:
             -e CYPRESS_BASE_URL="http://$GATEWAY_IP:$APP_PORT" \
             --add-host=host.docker.internal:host-gateway \
             -v ${{ github.workspace }}/reports:/app/cypress/fixtures \
-            full-accessibility-audit \
+            $AUDIT_IMAGE \
             sh -c "
               echo 'Waiting for connection to $GATEWAY_IP:$APP_PORT' && \
               npx wait-on http://$GATEWAY_IP:$APP_PORT --timeout 60000 && \
