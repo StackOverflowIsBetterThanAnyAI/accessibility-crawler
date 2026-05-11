@@ -1,58 +1,59 @@
-name: Reusable Accessibility Audit
+name: Full Accessibility Audit
 
 on:
-    workflow_call:
-        inputs:
-            app_port:
-                required: true
-                type: string
-                description: "provide the correct port for your local server"
-            start_command:
-                required: true
-                type: string
-                description: "provide the command to start your local server with the correct port and host flags"
+  workflow_call:
+    inputs:
+      app_port:
+        required: true
+        type: string
+        description: "provide the correct port for your local server"
+      start_command:
+        required: true
+        type: string
+        description: "provide the command to start your local server with the correct port and host flags"
 
 jobs:
-    audit:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout Client-App
-              uses: actions/checkout@v4
+  Full_Accessibility_Audit:
+    name: Full Accessibility Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Client-App
+        uses: actions/checkout@v4
 
-            - name: Setup Node
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "24"
-                  cache: "npm"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
 
-            - name: Start App
-              run: |
-                  npm ci
-                  ${{ inputs.start_command }} &
-                  npx wait-on http://localhost:${{ inputs.app_port }} --timeout 60000
+      - name: Start App
+        run: |
+          npm ci
+          ${{ inputs.start_command }} &
+          npx wait-on http://localhost:${{ inputs.app_port }} --timeout 60000
 
-            - name: Run Full Accessibility Audit via GHCR Image
-              run: |
-                  mkdir -p reports
-                  cp cypress/fixtures/sitemap.json reports/sitemap.json || echo '{"config": {"included": [], "excluded": []}, "urls": []}' > reports/sitemap.json
+      - name: Run Full Accessibility Audit via GHCR Image
+        run: |
+          mkdir -p reports
+          cp cypress/fixtures/sitemap.json reports/sitemap.json || echo '{"config": {"included": [], "excluded": []}, "urls": []}' > reports/sitemap.json
 
-                  GATEWAY_IP=$(docker network inspect bridge -f '{{ (index .IPAM.Config 0).Gateway }}')
+          GATEWAY_IP=$(docker network inspect bridge -f '{{ (index .IPAM.Config 0).Gateway }}')
 
-                  docker run --rm \
-                    --ipc=host \
-                    -e CYPRESS_BASE_URL="http://$GATEWAY_IP:${{ inputs.app_port }}" \
-                    --add-host=host.docker.internal:host-gateway \
-                    -v ${{ github.workspace }}/reports:/app/cypress/fixtures \
-                    ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest \
-                    sh -c "
-                      npx wait-on http://$GATEWAY_IP:${{ inputs.app_port }} --timeout 60000 && \
-                      npm run cy:run-crawler && \
-                      npm run cy:run-audit
-                    "
+          docker run --rm \
+            --ipc=host \
+            -e CYPRESS_BASE_URL="http://$GATEWAY_IP:${{ inputs.app_port }}" \
+            --add-host=host.docker.internal:host-gateway \
+            -v ${{ github.workspace }}/reports:/app/cypress/fixtures \
+            ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest \
+            sh -c "
+              npx wait-on http://$GATEWAY_IP:${{ inputs.app_port }} --timeout 60000 && \
+              npm run cy:run-crawler && \
+              npm run cy:run-audit
+            "
 
-            - name: Upload Reports
-              uses: actions/upload-artifact@v4
-              if: always()
-              with:
-                  name: full-accessibility-reports
-                  path: reports/
+      - name: Upload Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-accessibility-reports
+          path: reports/

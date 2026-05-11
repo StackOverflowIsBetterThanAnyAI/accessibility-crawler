@@ -5,6 +5,7 @@ on:
 
 jobs:
     Publish_Audit_Image:
+        name: Publish Audit Image
         runs-on: ubuntu-latest
         permissions:
             contents: read
