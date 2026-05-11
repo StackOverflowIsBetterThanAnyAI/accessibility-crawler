@@ -4,19 +4,28 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
+        "dev": "vite",
         "lint": "eslint .",
         "cy:run-crawler": "cypress run --spec cypress/e2e/crawler.cy.ts",
         "cy:run-audit": "cypress run --spec cypress/e2e/audit.cy.ts"
     },
     "dependencies": {
-        "franc": "^6.2.0"
+        "franc": "^6.2.0",
+        "react": "^19.2.6",
+        "react-dom": "^19.2.6",
+        "react-router-dom": "^7.15.0"
     },
     "prettier": "prettier-es5",
     "devDependencies": {
         "@eslint/js": "^9.39.4",
+        "@rolldown/plugin-babel": "^0.2.3",
         "@types/jquery": "^4.0.0",
         "@types/node": "^24.12.3",
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^6.0.1",
         "axe-core": "^4.11.4",
+        "babel-plugin-react-compiler": "^1.0.0",
         "cypress": "^15.14.2",
         "cypress-axe": "^1.7.0",
         "eslint": "^9.39.4",
@@ -26,6 +35,7 @@
         "prettier-es5": "^0.0.4",
         "typescript": "~5.9.3",
         "typescript-eslint": "^8.59.2",
+        "vite": "^8.0.12",
         "wait-on": "^9.0.10"
     }
 }
