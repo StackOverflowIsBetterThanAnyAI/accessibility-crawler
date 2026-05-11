@@ -33,20 +33,6 @@ const Home = () => (
             />
         </video>
         <br />
-        <video poster="image.png" controls width={260}>
-            <source
-                src="https://raw.githubusercontent.com/bower-media-samples/big-buck-bunny-1080p-60fps-30s/master/video.mp4"
-                lang="en"
-                type="video/mp4"
-            />
-            <track
-                kind="descriptions"
-                label="English"
-                src="myvideo-en.vtt"
-                srcLang="en"
-            />
-        </video>
-        <br />
         <form action="/" method="post">
             <fieldset>
                 <legend>Your Residential Address 2</legend>
