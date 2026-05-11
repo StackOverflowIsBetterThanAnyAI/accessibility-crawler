@@ -321,50 +321,55 @@ export const checkNonEmptyHeading = (
     $body.find('h1, h2, h3, h4, h5, h6, [role="heading"]').each((_, el) => {
         const $el = Cypress.$(el)
 
-        const isHidden =
-            ($el.is(':hidden') && $el.text() !== '') ||
-            $el.attr('aria-hidden') === 'true' ||
-            $el.css('display') === 'none'
-        const isDecorative =
-            $el.attr('role') === 'presentation' || $el.attr('role') === 'none'
+        const role = $el.attr('role')
+        const hasAriaLabel = $el.attr('aria-label') !== undefined
+        const hasAriaLabelledBy = !!$el.attr('aria-labelledby')
 
-        if (isHidden || isDecorative) {
+        if (
+            (role === 'presentation' || role === 'none') &&
+            !hasAriaLabel &&
+            !hasAriaLabelledBy
+        ) {
+            return
+        }
+
+        const isHiddenInTree =
+            $el.attr('aria-hidden') === 'true' ||
+            $el.closest('[aria-hidden="true"]').length > 0
+        if (isHiddenInTree) {
             return
         }
 
         let accessibleName = ''
 
-        const labelledBy = $el.attr('aria-labelledby')
-        if (labelledBy) {
-            const target = document.getElementById(labelledBy.split(/\s+/)[0])
-            accessibleName = target?.innerText || target?.textContent || ''
-        }
-
-        if (!accessibleName.trim()) {
+        if (hasAriaLabelledBy) {
+            const ids = $el.attr('aria-labelledby')!.split(/\s+/)
+            ids.forEach((id) => {
+                const $target = $body.find(`#${id}`)
+                if ($target.length > 0) {
+                    accessibleName += $target.text() || ''
+                }
+            })
+        } else if (hasAriaLabel) {
             accessibleName = $el.attr('aria-label') || ''
+        } else {
+            const $clone = $el.clone()
+            $clone.find('[aria-hidden="true"]').remove()
+
+            $clone.find('img').each((__, img) => {
+                const $img = Cypress.$(img)
+                const alt = $img.attr('alt')
+                const imgRole = $img.attr('role')
+                if (imgRole === 'presentation' || imgRole === 'none') {
+                    $img.replaceWith('')
+                } else {
+                    $img.replaceWith(alt || '')
+                }
+            })
+            accessibleName = $clone.text()
         }
 
-        if (!accessibleName.trim()) {
-            const hasImages = $el.find('img').length > 0
-            if (hasImages) {
-                let combinedText = ''
-                $el.contents().each((_, node) => {
-                    if (node.nodeType === Node.TEXT_NODE) {
-                        combinedText += node.textContent
-                    } else if (node.nodeName === 'IMG') {
-                        combinedText +=
-                            (node as HTMLImageElement).getAttribute('alt') || ''
-                    } else {
-                        combinedText += Cypress.$(node).text()
-                    }
-                })
-                accessibleName = combinedText
-            } else {
-                accessibleName = $el.text()
-            }
-        }
-
-        if (!accessibleName.trim()) {
+        if (!accessibleName.trim().length) {
             violations.push(
                 createCustomViolation({
                     id: 'non-empty-heading',
@@ -375,7 +380,7 @@ export const checkNonEmptyHeading = (
                         'https://www.w3.org/WAI/WCAG22/Techniques/general/G130',
                     html: el.outerHTML,
                     failureSummary: [
-                        'The heading content is programmatically empty.',
+                        'The heading content is currently programmatically empty.',
                         'Add text content, an aria-label, or descriptive alt-text for images inside the heading.',
                     ],
                     tags: ['wcag2a', 'wcag131'],
