@@ -6,7 +6,7 @@ env:
   APP_PORT: 5173
   # provide the correct port and host flags for your local server
   START_COMMAND: "npx vite --port 5173 --host"
-  AUDIT_IMAGE: ghcr.io/${{ github.repository_owner }}/full-accessibility-audit:latest
+  AUDIT_IMAGE: ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest
 
 jobs:
   Full_Accessibility_Audit:
