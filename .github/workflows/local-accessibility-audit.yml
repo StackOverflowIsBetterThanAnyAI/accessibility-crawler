@@ -1,5 +1,7 @@
 name: Full Accessibility Audit
-on: [push, pull_request]
+on:
+  push:
+    branches: [local-vite-app]
 
 env:
   # provide the correct port for your local server
