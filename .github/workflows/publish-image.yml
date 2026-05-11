@@ -23,4 +23,4 @@ jobs:
               with:
                   context: .
                   push: true
-                  tags: ghcr.io/${{ github.repository_owner }}/full-accessibility-audit:latest
+                  tags: ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest
