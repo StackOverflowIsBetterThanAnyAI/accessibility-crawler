@@ -10,6 +10,7 @@ env:
 
 jobs:
   Full_Accessibility_Audit:
+    name: Full Accessibility Audit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
