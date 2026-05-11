@@ -8,7 +8,7 @@ export default defineConfig({
         baseUrl: 'http://localhost:5173',
         setupNodeEvents(on, _config) {
             on('task', {
-                checkFileExists(path: string) {
+                checkIfFileExists(path: string) {
                     return fs.existsSync(path)
                 },
             })
