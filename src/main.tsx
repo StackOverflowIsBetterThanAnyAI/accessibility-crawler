@@ -237,6 +237,6 @@ function App() {
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <App />
+        <div>Hello World</div>
     </StrictMode>
 )
