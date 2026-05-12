@@ -34,8 +34,8 @@ jobs:
 
       - name: Run Full Accessibility Audit via GHCR Image
         run: |
-          mkdir -p reports
-          cp cypress/fixtures/sitemap.json reports/sitemap.json || echo '{"config": {"only": [], "included": [], "excluded": []}, "urls": []}' > reports/sitemap.json
+          mkdir -p audit
+          cp cypress/fixtures/sitemap.json audit/sitemap.json || echo '{"config": {"only": [], "included": [], "excluded": []}, "urls": []}' > audit/sitemap.json
 
           GATEWAY_IP=$(docker network inspect bridge -f '{{ (index .IPAM.Config 0).Gateway }}')
 
@@ -43,7 +43,7 @@ jobs:
             --ipc=host \
             -e CYPRESS_BASE_URL="http://$GATEWAY_IP:${{ inputs.app_port }}" \
             --add-host=host.docker.internal:host-gateway \
-            -v ${{ github.workspace }}/reports:/app/cypress/fixtures \
+            -v ${{ github.workspace }}/audit:/app/cypress/fixtures \
             ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest \
             sh -c "
               npx wait-on http://$GATEWAY_IP:${{ inputs.app_port }} --timeout 60000 && \
@@ -51,9 +51,9 @@ jobs:
               npm run cy:run-audit
             "
 
-      - name: Upload Reports
+      - name: Upload Audit
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: full-accessibility-reports
-          path: reports/
+          name: full-accessibility-audit
+          path: audit/
