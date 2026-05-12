@@ -1,7 +1,12 @@
 import { addLeadingSlash, removeTrailingSlash } from './url-helper'
 
 export const getInternalLinks = (baseUrl: string) => {
-    return cy.get('a').then((links: JQuery<HTMLAnchorElement>) => {
+    return cy.get('body').then(($body) => {
+        const links = $body.find('a')
+        if (!links.length) {
+            return []
+        }
+
         const rawUrls: string[] = links
             .map((_: number, el: HTMLAnchorElement) => el.href)
             .get()
