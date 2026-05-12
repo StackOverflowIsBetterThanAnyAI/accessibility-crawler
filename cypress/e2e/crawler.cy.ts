@@ -16,6 +16,7 @@ describe('Crawler: Discovery Phase', () => {
     }
 
     let sitemapConfig = {
+        only: [] as string[],
         included: [] as string[],
         excluded: [] as string[],
     }
@@ -51,9 +52,15 @@ describe('Crawler: Discovery Phase', () => {
                 cy.readFile(sitemapPath).then((existingSitemap) => {
                     if (existingSitemap && existingSitemap.config) {
                         sitemapConfig = existingSitemap.config
-                        for (const item of sitemapConfig.included) {
-                            if (isPathAllowedForAudit(item)) {
+                        if (sitemapConfig.only.length) {
+                            for (const item of sitemapConfig.only) {
                                 auditUrls.add(cleanUpExistingPattern(item))
+                            }
+                        } else {
+                            for (const item of sitemapConfig.included) {
+                                if (isPathAllowedForAudit(item)) {
+                                    auditUrls.add(cleanUpExistingPattern(item))
+                                }
                             }
                         }
                         cy.log('Existing config loaded.')
@@ -65,7 +72,7 @@ describe('Crawler: Discovery Phase', () => {
         })
         cy.then(() => {
             const processQueue = () => {
-                if (!queue.length) {
+                if (!queue.length || sitemapConfig.only.length) {
                     cy.writeFile(sitemapPath, {
                         config: sitemapConfig,
                         urls: Array.from(auditUrls),

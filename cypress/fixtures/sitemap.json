@@ -1,14 +1,21 @@
 {
-    "config": {
-        "included": [" /test", "*pattern/*"],
-        "excluded": ["/about/*", "/contact*", "/test*", "/"]
-    },
-    "urls": [
-        "/pattern",
-        "/four-oh-four",
-        "/about",
-        "/shop",
-        "/shop/product?id=1"
+  "config": {
+    "only": [
+      " / "
     ],
-    "generatedAt": "2026-05-11T08:51:44.601Z"
+    "included": [
+      " /test",
+      "*pattern/*"
+    ],
+    "excluded": [
+      "/about/*",
+      "/contact*",
+      "/test*",
+      "/"
+    ]
+  },
+  "urls": [
+    "/"
+  ],
+  "generatedAt": "2026-05-12T10:46:50.686Z"
 }
