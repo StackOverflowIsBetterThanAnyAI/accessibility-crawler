@@ -53,18 +53,18 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
             issues: accessibilityErrors,
         })
 
-        let mdContent = `## Full Accessibility Audit \n\n`
-        mdContent += `> **Total issues found:** ${totalIssues}\n`
-        mdContent += `> **Amount of checked pages:** ${sitemap.urls.length}\n`
-        mdContent += `> **Timestamp:** ${new Date().toLocaleString('de-DE')}\n\n---\n\n`
+        let mdContent = `# Full Accessibility Audit \n\n`
+        mdContent += `> - **Total issues found:** ${totalIssues}\n`
+        mdContent += `> - **Amount of checked pages:** ${sitemap.urls.length}\n`
+        mdContent += `> - **Timestamp:** ${new Date().toLocaleString('de-DE')}\n\n---\n\n`
 
         if (!totalIssues) {
             mdContent +=
-                `### No issues found!\n` +
+                `## No issues found!\n` +
                 `All checked subpages passed the accessibility audit without any issues.\n` +
                 `Keep in mind that there may be other accessibility issues not covered by this audit.`
         } else {
-            mdContent += `### Found ${totalIssues} issues\n\n`
+            mdContent += `## Found ${totalIssues} issues\n\n`
 
             accessibilityErrors.forEach((error, index) => {
                 const formattedMessage = error.message
@@ -73,9 +73,10 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
                         'Fix all of the following:',
                         '```\n\n**Fix all of the following:**'
                     )
-                    .replace('Help: ', '\n**Help:** ')
+                    .replace(/ • /g, '\n • ')
+                    .replace('Help: ', '\n**Help:**\n')
 
-                mdContent += `#### ${index + 1}. [${error.id}]\n${formattedMessage}\n\n---\n`
+                mdContent += `### ${index + 1}. [${error.id}]\n${formattedMessage}\n\n---\n`
             })
         }
 
