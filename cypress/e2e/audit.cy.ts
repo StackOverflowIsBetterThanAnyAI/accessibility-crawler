@@ -73,8 +73,8 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
                         'Fix all of the following:',
                         '```\n\n**Fix all of the following:**'
                     )
-                    .replace(/ • /g, '\n • ')
-                    .replace('Help: ', '\n**Help:**\n')
+                    .replace(/ • /g, '<br> • ')
+                    .replace('Help: ', '\n**Help:**<br>')
 
                 mdContent += `### ${index + 1}. [${error.id}]\n${formattedMessage}\n\n---\n`
             })
