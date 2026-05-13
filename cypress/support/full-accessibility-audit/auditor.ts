@@ -14,21 +14,26 @@ export const runAlfaAudit = (
         .then((alfaResult) => {
             const violations: { id: string; message: string }[] = []
 
+            if (!alfaResult?.resultAggregates) {
+                console.warn(
+                    'Alfa hat keine Ergebnisse (Aggregates) geliefert.'
+                )
+                return
+            }
+
             alfaResult.resultAggregates.forEach((stats, ruleArg) => {
-                if (stats.failed) {
+                if (stats?.failed > 0) {
+                    const rule = ruleArg as any
+
                     const ruleUri =
-                        typeof ruleArg === 'string'
-                            ? ruleArg
-                            : (ruleArg as any).uri
-
-                    const ruleId = ruleUri.split('/').pop() || 'alfa-rule'
-
+                        typeof rule === 'string'
+                            ? rule
+                            : (rule?.uri ?? 'alfa/unknown')
+                    const ruleId = ruleUri.split('/').pop() ?? 'alfa-rule'
                     const description =
-                        (ruleArg as any).description ||
-                        `Accessibility violation (URI: ${ruleUri})`
+                        rule?.description ?? `Violation of rule ${ruleId}`
                     const rationale =
-                        (ruleArg as any).rationale ||
-                        'Refer to WCAG guidelines for this rule.'
+                        rule?.rationale ?? 'No rationale provided by Alfa.'
 
                     violations.push({
                         id: ruleId,
@@ -37,7 +42,11 @@ export const runAlfaAudit = (
                 }
             })
 
-            if (violations.length) {
+            console.log(
+                `Alfa Audit für ${currentPath}: ${violations.length} Fehler gefunden.`
+            )
+
+            if (violations.length > 0) {
                 processViolations(currentPath, violations as any, errorList)
             }
         })
