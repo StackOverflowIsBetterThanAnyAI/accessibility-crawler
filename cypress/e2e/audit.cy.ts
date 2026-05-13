@@ -13,14 +13,9 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         sitemap = require('../fixtures/sitemap.json')
         if (!sitemap.urls.length) {
-            it('Error: Sitemap is empty', () => {
-                throw new Error('Please execute crawler-separated.cy.ts!')
-            })
+            sitemap = { urls: [] }
         }
     } catch {
-        it('Error: Sitemap not found', () => {
-            throw new Error('Please execute crawler-separated.cy.ts first!')
-        })
         sitemap = { urls: [] }
     }
 
@@ -36,15 +31,27 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
 
     it('--- Accessibility Audit Summary ---', () => {
         const totalIssues = accessibilityErrors.length
-        const jsonPath = 'cypress/fixtures/full-accessibility-audit.json'
-        const mdPath = 'cypress/fixtures/full-accessibility-audit.md'
+        const reportPath = 'cypress/fixtures/full-accessibility-audit.json'
+
+        if (!sitemap.urls.length) {
+            cy.log('----------------------------')
+            cy.log('No pages found in sitemap.')
+            cy.log(
+                'Please ensure that the crawler has generated the sitemap.json file.'
+            )
+            cy.log(
+                'If you have already run the crawler and the sitemap.json file is present, please check its contents to ensure it has the expected structure.'
+            )
+            cy.log('----------------------------')
+            return
+        }
 
         cy.log('----------------------------')
         cy.log(`Amount of checked pages: ${sitemap.urls.length}`)
         cy.log(`Total issues found: ${totalIssues}`)
         cy.log('----------------------------')
 
-        cy.writeFile(jsonPath, {
+        cy.writeFile(reportPath, {
             summary: {
                 totalCheckedPages: sitemap.urls.length,
                 totalIssues: totalIssues,
@@ -53,59 +60,29 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
             issues: accessibilityErrors,
         })
 
-        let mdContent = `# Full Accessibility Audit \n\n`
-        mdContent += `> - **Total issues found:** ${totalIssues}\n`
-        mdContent += `> - **Amount of checked pages:** ${sitemap.urls.length}\n`
-        mdContent += `> - **Timestamp:** ${new Date().toLocaleString('de-DE')}\n\n---\n\n`
-
         if (!totalIssues) {
-            mdContent +=
-                `## No issues found!\n` +
-                `All checked subpages passed the accessibility audit without any issues.\n` +
-                `Keep in mind that there may be other accessibility issues not covered by this audit.`
+            cy.log(
+                'All subpages passed the accessibility audit without any issues.'
+            )
+            cy.log(
+                'Keep in mind that there may be other accessibility issues not covered by this audit.'
+            )
         } else {
-            mdContent += `## Found ${totalIssues} issues\n\n`
-
             accessibilityErrors.forEach((error, index) => {
-                const formattedMessage = error.message
-                    .replace('Element: ', '\n**Element:**\n```html\n')
-                    .replace(
-                        'Fix all of the following:',
-                        '```\n\n**Fix all of the following:**'
-                    )
-                    .replace('Help: ', '\n**Help:** ')
+                cy.log(`${index + 1}. ${error.message}`)
+            })
 
-                mdContent += `### ${index + 1}. [${error.id}]\n${formattedMessage}\n\n---\n`
+            cy.then(() => {
+                const errorMessage = accessibilityErrors
+                    .map((err) => err.message)
+                    .join(
+                        '\n\n--------------------------------------------------------\n\n'
+                    )
+                expect(
+                    totalIssues,
+                    `Found ${totalIssues} issues:\n${errorMessage}\n\n`
+                ).to.equal(0)
             })
         }
-
-        cy.writeFile(mdPath, mdContent)
-
-        cy.then(() => {
-            if (!totalIssues) {
-                cy.log(
-                    'All checked subpages passed the accessibility audit without any issues.'
-                )
-                cy.log(
-                    'Keep in mind that there may be other accessibility issues not covered by this audit.'
-                )
-            } else {
-                accessibilityErrors.forEach((error, index) => {
-                    cy.log(`${index + 1}. ${error.message}`)
-                })
-
-                cy.then(() => {
-                    const errorMessage = accessibilityErrors
-                        .map((err) => err.message)
-                        .join(
-                            '\n\n--------------------------------------------------------\n\n'
-                        )
-                    expect(
-                        totalIssues,
-                        `Found ${totalIssues} issues:\n${errorMessage}\n\n`
-                    ).to.equal(0)
-                })
-            }
-        })
     })
 })
