@@ -16,6 +16,8 @@ jobs:
   Full_Accessibility_Audit_Axe:
     name: Full Accessibility Audit Axe
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:axe
     steps:
       - name: Checkout Client-App
         uses: actions/checkout@v4
