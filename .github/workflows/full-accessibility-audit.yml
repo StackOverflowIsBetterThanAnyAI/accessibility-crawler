@@ -46,7 +46,7 @@ jobs:
             -e CYPRESS_BASE_URL="http://$GATEWAY_IP:${{ inputs.app_port }}" \
             --add-host=host.docker.internal:host-gateway \
             -v ${{ github.workspace }}/audit:/app/cypress/fixtures \
-            ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest \
+            ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:alfa \
             sh -c "
               npx wait-on http://$GATEWAY_IP:${{ inputs.app_port }} --timeout 60000 && \
               npm run cy:run-crawler && \
