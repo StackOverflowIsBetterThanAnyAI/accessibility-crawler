@@ -20,8 +20,7 @@ export const runAlfaAudit = (
             const violationsForProcess: any[] = []
 
             alfaResult.resultAggregates.forEach((stats, ruleArg) => {
-                if (stats.failed > 0) {
-                    // Sicherheit: Prüfen, ob ruleArg ein String oder Objekt ist
+                if (stats.failed) {
                     const ruleUri =
                         typeof ruleArg === 'string'
                             ? ruleArg
@@ -32,18 +31,17 @@ export const runAlfaAudit = (
                     const ruleRationale =
                         (ruleArg as any).rationale || 'No rationale available'
 
-                    // Falls ruleUri leer ist, Fallback nutzen
                     const ruleId = ruleUri
                         ? ruleUri.split('/').pop()
                         : 'alfa-rule'
 
                     violationsForProcess.push({
                         id: ruleId,
-                        impact: 'serious', // Alfa Mapping: failed -> serious
+                        impact: 'serious',
                         description: ruleDescription,
                         help: ruleDescription,
                         helpUrl: ruleUri || 'https://alfa.siteimprove.com/',
-                        tags: [], // Alfa Tags weichen von Axe Tags ab
+                        tags: [],
                         nodes: [
                             {
                                 html: 'Target element details (see Alfa report for specifics)',
@@ -54,7 +52,7 @@ export const runAlfaAudit = (
                 }
             })
 
-            if (violationsForProcess.length > 0) {
+            if (violationsForProcess.length) {
                 processViolations(currentPath, violationsForProcess, errorList)
             }
         })
