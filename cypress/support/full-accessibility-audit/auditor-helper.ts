@@ -1,24 +1,6 @@
 import axe from 'axe-core'
 import { formatWCAGTag } from './format-wcag-tag'
-import { CustomViolationReturnType, CustomViolationType } from './types'
-
-export const createCustomViolation = (
-    data: CustomViolationType
-): CustomViolationReturnType => {
-    const { failureSummary, html, impact, ...rest } = data
-    return {
-        ...rest,
-        impact,
-        nodes: [
-            {
-                failureSummary: `Fix all of the following:\n• ${failureSummary.filter((item) => item).join('\n• ')}`,
-                html,
-                impact,
-                target: [html],
-            },
-        ],
-    }
-}
+import { CustomViolationReturnType } from './types'
 
 export const processViolations = (
     currentPath: string,

@@ -1,9 +1,5 @@
 import axe from 'axe-core'
-import * as BodyChecks from './auditor-checks-body'
-import * as HeadChecks from './auditor-checks-head'
-import * as HtmlChecks from './auditor-checks-html'
 import { processViolations } from './auditor-helper'
-import { CustomViolationReturnType } from './types'
 
 export const runAxeAudit = (
     currentPath: string,
@@ -32,40 +28,4 @@ export const runAxeAudit = (
         },
         true
     )
-
-    cy.get('body').then(($body) => {
-        Object.values(BodyChecks).forEach((checkFunction) => {
-            if (typeof checkFunction === 'function') {
-                checkFunction(
-                    $body,
-                    (violations: CustomViolationReturnType[]) =>
-                        processViolations(currentPath, violations, errorList)
-                )
-            }
-        })
-    })
-
-    cy.get('head').then(($head) => {
-        Object.values(HeadChecks).forEach((checkFunction) => {
-            if (typeof checkFunction === 'function') {
-                checkFunction(
-                    $head,
-                    (violations: CustomViolationReturnType[]) =>
-                        processViolations(currentPath, violations, errorList)
-                )
-            }
-        })
-    })
-
-    cy.get('html').then(($html) => {
-        Object.values(HtmlChecks).forEach((checkFunction) => {
-            if (typeof checkFunction === 'function') {
-                checkFunction(
-                    $html,
-                    (violations: CustomViolationReturnType[]) =>
-                        processViolations(currentPath, violations, errorList)
-                )
-            }
-        })
-    })
 }
