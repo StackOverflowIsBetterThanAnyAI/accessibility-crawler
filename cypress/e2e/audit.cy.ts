@@ -1,4 +1,4 @@
-import { runAxeAudit } from '../support/full-accessibility-audit/auditor'
+import { runAlfaAudit } from '../support/full-accessibility-audit/auditor'
 import { addLeadingSlash } from '../support/full-accessibility-audit/url-helper'
 
 describe('Accessibility Audit: Separated Crawler from Auditor', () => {
@@ -22,10 +22,11 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
     const accessibilityErrors: { id: string; message: string }[] = []
 
     sitemap.urls.forEach((path) => {
-        it(`Check: ${path}`, () => {
+        it(`Alfa Check: ${path}`, () => {
             const url = baseUrl + addLeadingSlash(path)
             cy.visit(url)
-            runAxeAudit(path, accessibilityErrors)
+            // Hier wird nun die Alfa-Engine gezündet
+            runAlfaAudit(path, accessibilityErrors)
         })
     })
 

@@ -8,17 +8,17 @@
         "cy:run-crawler": "cypress run --spec cypress/e2e/crawler.cy.ts",
         "cy:run-audit": "cypress run --spec cypress/e2e/audit.cy.ts"
     },
-    "dependencies": {
-        "franc": "^6.2.0"
-    },
     "prettier": "prettier-es5",
     "devDependencies": {
         "@eslint/js": "^9.39.4",
+        "@siteimprove/alfa-act": "^0.114.3",
+        "@siteimprove/alfa-cypress": "^0.82.1",
+        "@siteimprove/alfa-rules": "^0.114.3",
+        "@siteimprove/alfa-test-utils": "^0.82.1",
+        "@siteimprove/alfa-web": "^0.114.3",
         "@types/jquery": "^4.0.0",
         "@types/node": "^24.12.3",
         "axe-core": "^4.11.4",
-        "cypress": "^15.14.2",
-        "cypress-axe": "^1.7.0",
         "eslint": "^9.39.4",
         "eslint-plugin-react-hooks": "^7.1.1",
         "eslint-plugin-react-refresh": "^0.5.2",

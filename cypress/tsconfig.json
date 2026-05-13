@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "ESNext",
         "lib": ["ESNext", "dom"],
-        "types": ["cypress", "node", "jquery", "cypress-axe"],
+        "types": ["cypress", "node", "jquery"],
         "module": "es2015",
         "moduleResolution": "bundler",
         "strict": true,

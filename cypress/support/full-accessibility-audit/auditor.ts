@@ -1,71 +1,36 @@
-import axe from 'axe-core'
-import * as BodyChecks from './auditor-checks-body'
-import * as HeadChecks from './auditor-checks-head'
-import * as HtmlChecks from './auditor-checks-html'
+import { Cypress as AlfaCypress } from '@siteimprove/alfa-cypress'
+import { Rules } from '@siteimprove/alfa-rules'
+import { Audit } from '@siteimprove/alfa-act' // WICHTIG: Hier steckt die Logik
 import { processViolations } from './auditor-helper'
-import { CustomViolationReturnType } from './types'
 
-export const runAxeAudit = (
+export const runAlfaAudit = (
     currentPath: string,
     errorList: { id: string; message: string }[]
 ) => {
-    cy.injectAxe()
+    cy.document().then(async (doc) => {
+        // 1. Dokument in Alfa-Page konvertieren
+        const page = await AlfaCypress.toPage(doc)
 
-    // axe-core checks
-    cy.checkA11y(
-        undefined,
-        {
-            runOnly: {
-                type: 'tag',
-                values: [
-                    'wcag2a',
-                    'wcag2aa',
-                    'wcag21a',
-                    'wcag21aa',
-                    'wcag22aa',
-                ],
-            },
-            includedImpacts: ['critical', 'serious', 'moderate'],
-        },
-        (violations: axe.Result[]) => {
-            processViolations(currentPath, violations, errorList)
-        },
-        true
-    )
+        // 2. Das Audit-Objekt erstellen (Page + Regeln)
+        const runner = Audit.of(page, Object.values(Rules))
 
-    cy.get('body').then(($body) => {
-        Object.values(BodyChecks).forEach((checkFunction) => {
-            if (typeof checkFunction === 'function') {
-                checkFunction(
-                    $body,
-                    (violations: CustomViolationReturnType[]) =>
-                        processViolations(currentPath, violations, errorList)
-                )
-            }
-        })
-    })
+        // 3. Audit ausführen (asynchron)
+        const outcomes = await runner.evaluate()
 
-    cy.get('head').then(($head) => {
-        Object.values(HeadChecks).forEach((checkFunction) => {
-            if (typeof checkFunction === 'function') {
-                checkFunction(
-                    $head,
-                    (violations: CustomViolationReturnType[]) =>
-                        processViolations(currentPath, violations, errorList)
-                )
-            }
-        })
-    })
+        // 4. Ergebnisse filtern (Alfa nutzt "failed" für Verstöße)
+        const violations = [...outcomes]
+            .filter((outcome) => outcome.outcome === 'failed')
+            .map((outcome) => {
+                // Wir müssen das "Failed"-Outcome casten, um Zugriff auf die Rule zu haben
+                const failedOutcome = outcome as any
+                return {
+                    id: failedOutcome.rule.uri,
+                    message: `issue on [${currentPath}] - [Alfa]: ${failedOutcome.rule.description}\n\nRationale: ${failedOutcome.rule.rationale}`,
+                }
+            })
 
-    cy.get('html').then(($html) => {
-        Object.values(HtmlChecks).forEach((checkFunction) => {
-            if (typeof checkFunction === 'function') {
-                checkFunction(
-                    $html,
-                    (violations: CustomViolationReturnType[]) =>
-                        processViolations(currentPath, violations, errorList)
-                )
-            }
-        })
+        if (violations.length > 0) {
+            processViolations(currentPath, violations as any, errorList)
+        }
     })
 }
