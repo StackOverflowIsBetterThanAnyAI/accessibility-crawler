@@ -16,6 +16,8 @@ jobs:
   Full_Accessibility_Audit:
     name: Full Accessibility Audit
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest
     steps:
       - name: Checkout Client-App
         uses: actions/checkout@v4
