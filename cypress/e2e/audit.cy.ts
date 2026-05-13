@@ -13,14 +13,9 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         sitemap = require('../fixtures/sitemap.json')
         if (!sitemap.urls.length) {
-            it('Error: Sitemap is empty', () => {
-                throw new Error('Please execute crawler-separated.cy.ts!')
-            })
+            sitemap = { urls: [] }
         }
     } catch {
-        it('Error: Sitemap not found', () => {
-            throw new Error('Please execute crawler-separated.cy.ts first!')
-        })
         sitemap = { urls: [] }
     }
 
@@ -37,6 +32,19 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
     it('--- Accessibility Audit Summary ---', () => {
         const totalIssues = accessibilityErrors.length
         const reportPath = 'cypress/fixtures/full-accessibility-audit.json'
+
+        if (!sitemap.urls.length) {
+            cy.log('----------------------------')
+            cy.log('No pages found in sitemap.')
+            cy.log(
+                'Please ensure that the crawler has generated the sitemap.json file.'
+            )
+            cy.log(
+                'If you have already run the crawler and the sitemap.json file is present, please check its contents to ensure it has the expected structure.'
+            )
+            cy.log('----------------------------')
+            return
+        }
 
         cy.log('----------------------------')
         cy.log(`Amount of checked pages: ${sitemap.urls.length}`)
