@@ -12,42 +12,35 @@ export const runAlfaAudit = (
             return await Audit.run(page)
         })
         .then((alfaResult) => {
-            const violations: { id: string; message: string }[] = []
-
             if (!alfaResult?.resultAggregates) {
-                console.warn(
-                    'Alfa hat keine Ergebnisse (Aggregates) geliefert.'
-                )
+                console.warn('No aggregates found.')
                 return
             }
 
+            const violationsForProcess: any[] = []
+
             alfaResult.resultAggregates.forEach((stats, ruleArg) => {
-                if (stats?.failed > 0) {
+                if (stats.failed > 0) {
                     const rule = ruleArg as any
-
-                    const ruleUri =
-                        typeof rule === 'string'
-                            ? rule
-                            : (rule?.uri ?? 'alfa/unknown')
-                    const ruleId = ruleUri.split('/').pop() ?? 'alfa-rule'
-                    const description =
-                        rule?.description ?? `Violation of rule ${ruleId}`
-                    const rationale =
-                        rule?.rationale ?? 'No rationale provided by Alfa.'
-
-                    violations.push({
-                        id: ruleId,
-                        message: `issue on [${currentPath}] - [Alfa]: ${description}\n\nRationale: ${rationale}`,
+                    violationsForProcess.push({
+                        id: rule.uri.split('/').pop() || 'alfa-rule',
+                        impact: 'serious',
+                        description: rule.description,
+                        help: rule.description,
+                        helpUrl: rule.uri,
+                        tags: [],
+                        nodes: [
+                            {
+                                html: 'Target element details',
+                                failureSummary: rule.rationale,
+                            },
+                        ],
                     })
                 }
             })
 
-            console.log(
-                `Alfa Audit für ${currentPath}: ${violations.length} Fehler gefunden.`
-            )
-
-            if (violations.length > 0) {
-                processViolations(currentPath, violations as any, errorList)
+            if (violationsForProcess.length > 0) {
+                processViolations(currentPath, violationsForProcess, errorList)
             }
         })
 }
