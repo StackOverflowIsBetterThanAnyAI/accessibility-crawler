@@ -24,7 +24,7 @@ export const runAlfaAudit = (
                 }
             })
 
-        if (violations.length > 0) {
+        if (violations.length) {
             processViolations(currentPath, violations as any, errorList)
         }
     })
