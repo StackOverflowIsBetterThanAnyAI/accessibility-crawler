@@ -9,6 +9,7 @@ export const runAlfaAudit = (
     errorList: { id: string; message: string }[]
 ) => {
     cy.document().then(async (doc) => {
+        await new Promise((resolve) => setTimeout(resolve, 500))
         const page = await AlfaCypress.toPage(doc)
 
         const allRules = Object.values(Rules).filter(
@@ -32,6 +33,11 @@ export const runAlfaAudit = (
                     message: `issue on [${currentPath}] - [Alfa]: ${failedOutcome.rule.description}\n\nRationale: ${failedOutcome.rule.rationale}`,
                 }
             })
+
+        console.log(`Alfa Outcomes: Total: ${[...outcomes].length}`)
+        console.log(
+            `Passed: ${[...outcomes].filter((o) => o.outcome === 'passed').length}`
+        )
 
         if (violations.length) {
             processViolations(currentPath, violations as any, errorList)
