@@ -25,7 +25,6 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         it(`Alfa Check: ${path}`, () => {
             const url = baseUrl + addLeadingSlash(path)
             cy.visit(url)
-            // Hier wird nun die Alfa-Engine gezündet
             runAlfaAudit(path, accessibilityErrors)
         })
     })
