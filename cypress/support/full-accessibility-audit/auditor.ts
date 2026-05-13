@@ -1,6 +1,7 @@
 import { Cypress as AlfaCypress } from '@siteimprove/alfa-cypress'
-import { Rules } from '@siteimprove/alfa-rules'
+import * as Rules from '@siteimprove/alfa-rules'
 import { Audit } from '@siteimprove/alfa-act'
+import { Rule } from '@siteimprove/alfa-act'
 import { processViolations } from './auditor-helper'
 
 export const runAlfaAudit = (
@@ -10,7 +11,15 @@ export const runAlfaAudit = (
     cy.document().then(async (doc) => {
         const page = await AlfaCypress.toPage(doc)
 
-        const runner = Audit.of(page, Object.values(Rules))
+        const allRules = Object.values(Rules).filter(
+            (rule) =>
+                rule !== null && typeof rule === 'object' && 'evaluate' in rule
+        )
+
+        const runner = Audit.of(
+            page,
+            allRules as unknown as Iterable<Rule<any, any, any, any>>
+        )
 
         const outcomes = await runner.evaluate()
 
@@ -19,7 +28,7 @@ export const runAlfaAudit = (
             .map((outcome) => {
                 const failedOutcome = outcome as any
                 return {
-                    id: failedOutcome.rule.uri,
+                    id: failedOutcome.rule.uri || 'alfa-rule',
                     message: `issue on [${currentPath}] - [Alfa]: ${failedOutcome.rule.description}\n\nRationale: ${failedOutcome.rule.rationale}`,
                 }
             })
