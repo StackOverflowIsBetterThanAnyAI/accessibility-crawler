@@ -1,4 +1,4 @@
-name: Full Accessibility Audit
+name: Full Accessibility Audit Axe
 
 on:
   workflow_call:
@@ -13,8 +13,8 @@ on:
         description: "provide the command to start your local server with the correct port and host flags"
 
 jobs:
-  Full_Accessibility_Audit:
-    name: Full Accessibility Audit
+  Full_Accessibility_Audit_Axe:
+    name: Full Accessibility Audit Axe
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Client-App
@@ -32,7 +32,7 @@ jobs:
           ${{ inputs.start_command }} &
           npx wait-on http://localhost:${{ inputs.app_port }} --timeout 60000
 
-      - name: Run Full Accessibility Audit via GHCR Image
+      - name: Run Full Accessibility Audit Axe via GHCR Image
         run: |
           mkdir -p audit
           cp cypress/fixtures/sitemap.json audit/sitemap.json || echo '{"config": {"only": [], "included": [], "excluded": []}, "urls": []}' > audit/sitemap.json
