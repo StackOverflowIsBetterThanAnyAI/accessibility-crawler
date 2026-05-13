@@ -1,46 +1,44 @@
 import { Cypress as AlfaCypress } from '@siteimprove/alfa-cypress'
-import * as Rules from '@siteimprove/alfa-rules'
-import { Audit } from '@siteimprove/alfa-act'
-import { Rule } from '@siteimprove/alfa-act'
+import { Audit } from '@siteimprove/alfa-test-utils/audit'
 import { processViolations } from './auditor-helper'
 
 export const runAlfaAudit = (
     currentPath: string,
     errorList: { id: string; message: string }[]
 ) => {
-    cy.document().then(async (doc) => {
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        const page = await AlfaCypress.toPage(doc)
+    cy.document()
+        .then(AlfaCypress.toPage)
+        .then(async (page) => {
+            return await Audit.run(page)
+        })
+        .then((alfaResult) => {
+            const violations: { id: string; message: string }[] = []
 
-        const allRules = Object.values(Rules).filter(
-            (rule) =>
-                rule !== null && typeof rule === 'object' && 'evaluate' in rule
-        )
+            alfaResult.resultAggregates.forEach((stats, ruleArg) => {
+                if (stats.failed) {
+                    const ruleUri =
+                        typeof ruleArg === 'string'
+                            ? ruleArg
+                            : (ruleArg as any).uri
 
-        const runner = Audit.of(
-            page,
-            allRules as unknown as Iterable<Rule<any, any, any, any>>
-        )
+                    const ruleId = ruleUri.split('/').pop() || 'alfa-rule'
 
-        const outcomes = await runner.evaluate()
+                    const description =
+                        (ruleArg as any).description ||
+                        `Accessibility violation (URI: ${ruleUri})`
+                    const rationale =
+                        (ruleArg as any).rationale ||
+                        'Refer to WCAG guidelines for this rule.'
 
-        const violations = [...outcomes]
-            .filter((outcome) => outcome.outcome === 'failed')
-            .map((outcome) => {
-                const failedOutcome = outcome as any
-                return {
-                    id: failedOutcome.rule.uri || 'alfa-rule',
-                    message: `issue on [${currentPath}] - [Alfa]: ${failedOutcome.rule.description}\n\nRationale: ${failedOutcome.rule.rationale}`,
+                    violations.push({
+                        id: ruleId,
+                        message: `issue on [${currentPath}] - [Alfa]: ${description}\n\nRationale: ${rationale}`,
+                    })
                 }
             })
 
-        console.log(`Alfa Outcomes: Total: ${[...outcomes].length}`)
-        console.log(
-            `Passed: ${[...outcomes].filter((o) => o.outcome === 'passed').length}`
-        )
-
-        if (violations.length) {
-            processViolations(currentPath, violations as any, errorList)
-        }
-    })
+            if (violations.length) {
+                processViolations(currentPath, violations as any, errorList)
+            }
+        })
 }
