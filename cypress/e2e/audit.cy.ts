@@ -31,7 +31,8 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
 
     it('--- Accessibility Audit Summary ---', () => {
         const totalIssues = accessibilityErrors.length
-        const reportPath = 'cypress/fixtures/full-accessibility-audit.json'
+        const jsonPath = 'cypress/fixtures/full-accessibility-audit.json'
+        const mdPath = 'cypress/fixtures/full-accessibility-audit.md'
 
         if (!sitemap.urls.length) {
             cy.log('----------------------------')
@@ -51,7 +52,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         cy.log(`Total issues found: ${totalIssues}`)
         cy.log('----------------------------')
 
-        cy.writeFile(reportPath, {
+        cy.writeFile(jsonPath, {
             summary: {
                 totalCheckedPages: sitemap.urls.length,
                 totalIssues: totalIssues,
@@ -60,29 +61,59 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
             issues: accessibilityErrors,
         })
 
-        if (!totalIssues) {
-            cy.log(
-                'All subpages passed the accessibility audit without any issues.'
-            )
-            cy.log(
-                'Keep in mind that there may be other accessibility issues not covered by this audit.'
-            )
-        } else {
-            accessibilityErrors.forEach((error, index) => {
-                cy.log(`${index + 1}. ${error.message}`)
-            })
+        let mdContent = `# Full Accessibility Audit \n\n`
+        mdContent += `> - **Total issues found:** ${totalIssues}\n`
+        mdContent += `> - **Amount of checked pages:** ${sitemap.urls.length}\n`
+        mdContent += `> - **Timestamp:** ${new Date().toLocaleString('de-DE')}\n\n---\n\n`
 
-            cy.then(() => {
-                const errorMessage = accessibilityErrors
-                    .map((err) => err.message)
-                    .join(
-                        '\n\n--------------------------------------------------------\n\n'
+        if (!totalIssues) {
+            mdContent +=
+                `## No issues found!\n` +
+                `All checked subpages passed the accessibility audit without any issues.\n` +
+                `Keep in mind that there may be other accessibility issues not covered by this audit.`
+        } else {
+            mdContent += `## Found ${totalIssues} issues\n\n`
+
+            accessibilityErrors.forEach((error, index) => {
+                const formattedMessage = error.message
+                    .replace('Element: ', '\n**Element:**\n```html\n')
+                    .replace(
+                        'Fix all of the following:',
+                        '```\n\n**Fix all of the following:**'
                     )
-                expect(
-                    totalIssues,
-                    `Found ${totalIssues} issues:\n${errorMessage}\n\n`
-                ).to.equal(0)
+                    .replace('Help: ', '\n**Help:** ')
+
+                mdContent += `### ${index + 1}. [${error.id}]\n${formattedMessage}\n\n---\n`
             })
         }
+
+        cy.writeFile(mdPath, mdContent)
+
+        cy.then(() => {
+            if (!totalIssues) {
+                cy.log(
+                    'All checked subpages passed the accessibility audit without any issues.'
+                )
+                cy.log(
+                    'Keep in mind that there may be other accessibility issues not covered by this audit.'
+                )
+            } else {
+                accessibilityErrors.forEach((error, index) => {
+                    cy.log(`${index + 1}. ${error.message}`)
+                })
+
+                cy.then(() => {
+                    const errorMessage = accessibilityErrors
+                        .map((err) => err.message)
+                        .join(
+                            '\n\n--------------------------------------------------------\n\n'
+                        )
+                    expect(
+                        totalIssues,
+                        `Found ${totalIssues} issues:\n${errorMessage}\n\n`
+                    ).to.equal(0)
+                })
+            }
+        })
     })
 })
