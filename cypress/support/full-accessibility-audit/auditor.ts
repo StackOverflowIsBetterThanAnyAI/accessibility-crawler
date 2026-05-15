@@ -1,10 +1,13 @@
 import axe from 'axe-core'
 import { processViolations } from './auditor-helper'
+import { waitForNetworkIdle } from './wait-for-network-idle'
 
 export const runAxeAudit = (
     currentPath: string,
     errorList: { id: string; message: string }[]
 ) => {
+    waitForNetworkIdle()
+
     cy.injectAxe()
 
     // axe-core checks
