@@ -1,11 +1,14 @@
 import { Cypress as AlfaCypress } from '@siteimprove/alfa-cypress'
 import { Audit } from '@siteimprove/alfa-test-utils/audit'
 import { processViolations } from './auditor-helper'
+import { waitForNetworkIdle } from './wait-for-network-idle'
 
 export const runAlfaAudit = (
     currentPath: string,
     errorList: { id: string; message: string }[]
 ) => {
+    waitForNetworkIdle()
+
     cy.document()
         .then(AlfaCypress.toPage)
         .then(async (page) => {
