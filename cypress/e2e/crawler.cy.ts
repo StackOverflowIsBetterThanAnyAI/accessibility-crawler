@@ -47,85 +47,83 @@ describe('Crawler: Discovery Phase', () => {
     }
 
     it('crawls all pages but filters sitemap.json based on config', () => {
-        cy.task<boolean>('checkIfFileExists', sitemapPath)
-            .then((exists) => {
-                if (exists) {
-                    return cy.readFile(sitemapPath)
-                }
-                return cy.wrap(null)
-            })
-            .then((existingSitemap) => {
-                if (existingSitemap && existingSitemap.config) {
-                    sitemapConfig = existingSitemap.config
-                    cy.log('Existing config loaded.')
-                }
-
-                if (sitemapConfig.only && sitemapConfig.only.length > 0) {
-                    cy.log('ONLY-Mode detected. Skipping crawl.')
-
-                    const onlyUrls = sitemapConfig.only.map((item) =>
-                        cleanUpExistingPattern(item)
-                    )
-
+        cy.task<boolean>('checkIfFileExists', sitemapPath).then((exists) => {
+            if (exists) {
+                cy.readFile(sitemapPath).then((existingSitemap) => {
+                    if (existingSitemap && existingSitemap.config) {
+                        sitemapConfig = existingSitemap.config
+                        if (sitemapConfig.only.length) {
+                            for (const item of sitemapConfig.only) {
+                                auditUrls.add(cleanUpExistingPattern(item))
+                            }
+                        } else {
+                            for (const item of sitemapConfig.included) {
+                                if (isPathAllowedForAudit(item)) {
+                                    auditUrls.add(cleanUpExistingPattern(item))
+                                }
+                            }
+                        }
+                        cy.log('Existing config loaded.')
+                    }
+                })
+            } else {
+                cy.log('No existing sitemap found. Generating empty config.')
+            }
+        })
+        cy.then(() => {
+            const processQueue = () => {
+                if (!queue.length || sitemapConfig.only.length) {
                     cy.writeFile(sitemapPath, {
                         config: sitemapConfig,
-                        urls: onlyUrls,
+                        urls: Array.from(auditUrls),
                         generatedAt: new Date().toISOString(),
                     })
                     return
                 }
 
-                const processQueue = () => {
-                    if (!queue.length) {
-                        cy.writeFile(sitemapPath, {
-                            config: sitemapConfig,
-                            urls: Array.from(auditUrls),
-                            generatedAt: new Date().toISOString(),
-                        })
-                        return
-                    }
-
-                    const currentPath = queue.shift()
-                    if (!currentPath) return
-
-                    const normalizedPath = removeTrailingSlash(currentPath)
-
-                    if (visitedUrls.has(normalizedPath)) {
-                        processQueue()
-                        return
-                    }
-
-                    visitedUrls.add(normalizedPath)
-
-                    if (isPathAllowedForAudit(normalizedPath)) {
-                        auditUrls.add(normalizedPath)
-                    }
-
-                    const fullUrl = currentPath.startsWith('http')
-                        ? currentPath
-                        : baseUrl + currentPath
-
-                    cy.visit(fullUrl).then(() => {
-                        getInternalLinks(baseUrl).then((newLinks) => {
-                            newLinks.forEach((link) => {
-                                const [
-                                    fullPathWithQuery,
-                                    isPathInQueue,
-                                    nextNormalizedPath,
-                                ] = getSubPages(baseUrl, link, queue)
-
-                                if (
-                                    !visitedUrls.has(nextNormalizedPath) &&
-                                    !isPathInQueue
-                                ) {
-                                    queue.push(fullPathWithQuery)
-                                }
-                            })
-                            processQueue()
-                        })
-                    })
+                const currentPath = queue.shift()
+                if (!currentPath) {
+                    return
                 }
-                processQueue()
-            })
+                const normalizedPath = removeTrailingSlash(currentPath)
+
+                if (visitedUrls.has(normalizedPath)) {
+                    processQueue()
+                    return
+                }
+
+                visitedUrls.add(normalizedPath)
+
+                if (isPathAllowedForAudit(normalizedPath)) {
+                    auditUrls.add(normalizedPath)
+                }
+
+                const fullUrl = currentPath.startsWith('http')
+                    ? currentPath
+                    : baseUrl + currentPath
+
+                cy.visit(fullUrl).then(() => {
+                    getInternalLinks(baseUrl).then((newLinks) => {
+                        newLinks.forEach((link) => {
+                            const [
+                                fullPathWithQuery,
+                                isPathInQueue,
+                                nextNormalizedPath,
+                            ] = getSubPages(baseUrl, link, queue)
+
+                            if (
+                                !visitedUrls.has(nextNormalizedPath) &&
+                                !isPathInQueue
+                            ) {
+                                queue.push(fullPathWithQuery)
+                            }
+                        })
+
+                        processQueue()
+                    })
+                })
+            }
+            processQueue()
+        })
     })
 })
