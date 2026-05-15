@@ -3,14 +3,14 @@ import * as BodyChecks from './auditor-checks-body'
 import * as HeadChecks from './auditor-checks-head'
 import * as HtmlChecks from './auditor-checks-html'
 import { processViolations } from './auditor-helper'
-import { waitForStableDOM } from './wait-for-stable-dom'
+import { waitForNetworkIdle } from './wait-for-network-idle'
 import { CustomViolationReturnType } from './types'
 
 export const runAxeAudit = (
     currentPath: string,
     errorList: { id: string; message: string }[]
 ) => {
-    waitForStableDOM()
+    waitForNetworkIdle()
 
     cy.injectAxe()
 

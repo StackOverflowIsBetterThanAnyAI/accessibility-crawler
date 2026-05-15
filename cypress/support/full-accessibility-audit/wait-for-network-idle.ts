@@ -1,0 +1,29 @@
+export const waitForNetworkIdle = (maxTimeout = 10000) => {
+    const checkInterval = 200
+    const idleThreshold = 1000
+    let lastResourceCount = 0
+    let timeIdle = 0
+    let elapsed = 0
+
+    const check = () => {
+        cy.window({ log: false }).then((win) => {
+            const resources = win.performance.getEntriesByType('resource')
+            const currentCount = resources.length
+
+            if (currentCount === lastResourceCount) {
+                timeIdle += checkInterval
+            } else {
+                timeIdle = 0
+                lastResourceCount = currentCount
+            }
+
+            elapsed += checkInterval
+
+            if (timeIdle < idleThreshold && elapsed < maxTimeout) {
+                cy.wait(checkInterval, { log: false })
+                check()
+            }
+        })
+    }
+    check()
+}
