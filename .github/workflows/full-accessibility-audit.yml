@@ -3,6 +3,11 @@ name: Full Accessibility Audit
 on:
   workflow_call:
     inputs:
+      node_version:
+        required: false
+        type: string
+        default: "24"
+        description: "node.js version to use"
       app_port:
         required: true
         type: string
@@ -23,7 +28,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: ${{ inputs.node_version }}
           cache: "npm"
 
       - name: Start App
