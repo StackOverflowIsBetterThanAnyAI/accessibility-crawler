@@ -56,6 +56,7 @@ describe('Crawler: Discovery Phase', () => {
                             for (const item of sitemapConfig.only) {
                                 auditUrls.add(cleanUpExistingPattern(item))
                             }
+                            return
                         } else {
                             for (const item of sitemapConfig.included) {
                                 if (isPathAllowedForAudit(item)) {
