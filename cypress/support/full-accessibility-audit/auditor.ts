@@ -4,11 +4,14 @@ import * as HeadChecks from './auditor-checks-head'
 import * as HtmlChecks from './auditor-checks-html'
 import { processViolations } from './auditor-helper'
 import { CustomViolationReturnType } from './types'
+import { waitForNetworkIdle } from './wait-for-network-idle'
 
 export const runAxeAudit = (
     currentPath: string,
     errorList: { id: string; message: string }[]
 ) => {
+    waitForNetworkIdle()
+
     cy.injectAxe()
 
     // axe-core checks

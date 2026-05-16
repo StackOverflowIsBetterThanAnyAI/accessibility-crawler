@@ -10,7 +10,7 @@ import {
 
 const Home = () => (
     <div>
-        <h1>Home</h1>
+        <p>Home</p>
         <p>Welcome</p>
         <br />
         <a href="/handbuch.pdf">Download PDF</a>
@@ -237,6 +237,6 @@ function App() {
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <div>Hello World</div>
+        <App />
     </StrictMode>
 )

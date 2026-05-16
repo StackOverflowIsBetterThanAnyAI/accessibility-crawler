@@ -1,4 +1,4 @@
-import { runAxeAudit } from '../support/full-accessibility-audit/auditor'
+import { runAlfaAudit } from '../support/full-accessibility-audit/alfa-auditor'
 import { addLeadingSlash } from '../support/full-accessibility-audit/url-helper'
 
 describe('Accessibility Audit: Separated Crawler from Auditor', () => {
@@ -25,7 +25,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         it(`Check: ${path}`, () => {
             const url = baseUrl + addLeadingSlash(path)
             cy.visit(url)
-            runAxeAudit(path, accessibilityErrors)
+            runAlfaAudit(path, accessibilityErrors)
         })
     })
 
