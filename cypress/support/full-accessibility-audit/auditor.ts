@@ -25,27 +25,45 @@ export const runAlfaAudit = (
 
             let resultsArray: any[] = []
 
-            if (typeof alfaResult.toArray === 'function') {
-                resultsArray = alfaResult.toArray()
-            } else if (
+            if (
                 alfaResult._results &&
                 typeof alfaResult._results.toArray === 'function'
             ) {
                 resultsArray = alfaResult._results.toArray()
-            } else if (typeof alfaResult.toJSON === 'function') {
-                const json = alfaResult.toJSON()
-                resultsArray = json.results || json || []
+            } else if (typeof alfaResult.toArray === 'function') {
+                resultsArray = alfaResult.toArray()
+            } else if (
+                alfaResult.results &&
+                typeof alfaResult.results.toArray === 'function'
+            ) {
+                resultsArray = alfaResult.results.toArray()
             } else {
-                cy.log('Alfa-Struktur unbekannt:', Object.keys(alfaResult))
-                resultsArray = Array.from(alfaResult)
+                const json =
+                    typeof alfaResult.toJSON === 'function'
+                        ? alfaResult.toJSON()
+                        : alfaResult
+                resultsArray = json.results || (Array.isArray(json) ? json : [])
+            }
+
+            if (!Array.isArray(resultsArray)) {
+                cy.log(
+                    'Alfa-Audit-Fehler: Ergebnisse konnten nicht in ein Array konvertiert werden.',
+                    resultsArray
+                )
+                return
             }
 
             for (const result of resultsArray) {
-                if (Outcome.isFailed(result) || result.outcome === 'failed') {
-                    const rule = result.rule
+                const isFailed =
+                    Outcome.isFailed(result) ||
+                    result.outcome === 'failed' ||
+                    result._outcome === 'failed'
+
+                if (isFailed) {
+                    const rule = result.rule || (result as any)._rule
                     if (!rule) continue
 
-                    const ruleUri = rule.uri || ''
+                    const ruleUri = rule.uri || (rule as any)._uri || ''
                     const ruleId = ruleUri
                         ? ruleUri.split('/').pop() || 'alfa-rule'
                         : 'alfa-rule'
@@ -62,13 +80,22 @@ export const runAlfaAudit = (
 
                     let targetHtml = 'Unknown Element'
                     if (result.target) {
+                        const target = result.target
                         if (
-                            typeof (result.target as any).toString ===
-                            'function'
+                            typeof target.toString === 'function' &&
+                            target.toString() !== '[object Object]'
                         ) {
-                            targetHtml = (result.target as any).toString()
-                        } else if ((result.target as any).html) {
-                            targetHtml = (result.target as any).html
+                            targetHtml = target.toString()
+                        } else if (target.html) {
+                            targetHtml = target.html
+                        } else if (target._html) {
+                            targetHtml = target._html
+                        } else if (typeof target.toJSON === 'function') {
+                            const targetJson = target.toJSON()
+                            targetHtml =
+                                targetJson.html ||
+                                targetJson.tagName ||
+                                'HTML Element'
                         }
                     }
 
@@ -78,7 +105,7 @@ export const runAlfaAudit = (
                             impact: 'serious',
                             description: ruleDescription,
                             help: ruleDescription,
-                            helpUrl: ruleUri || '',
+                            helpUrl: ruleUri || 'https://alfa.siteimprove.com/',
                             tags: [],
                             nodes: [],
                         })
