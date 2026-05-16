@@ -14,46 +14,73 @@ export const runAlfaAudit = (
         .then(async (page) => {
             return await Audit.run(page)
         })
-        .then((alfaResult) => {
-            if (!alfaResult?.resultAggregates) {
-                console.warn('No aggregates found.')
+        .then((alfaResult: any) => {
+            if (!alfaResult) {
+                console.warn('No Alfa results found.')
                 return
             }
 
-            const violationsForProcess: any[] = []
+            const jsonRepresentation =
+                typeof alfaResult.toJSON === 'function'
+                    ? alfaResult.toJSON()
+                    : alfaResult
 
-            alfaResult.resultAggregates.forEach((stats, ruleArg) => {
-                if (stats.failed) {
-                    const ruleUri =
-                        typeof ruleArg === 'string'
-                            ? ruleArg
-                            : (ruleArg as any).uri || ''
-                    const ruleDescription =
-                        (ruleArg as any).description ||
-                        'No description available'
-                    const ruleRationale =
-                        (ruleArg as any).rationale || 'No rationale available'
+            const rawOutcomes = jsonRepresentation.outcomes || []
+            const violationsMap = new Map<string, any>()
 
+            for (const result of rawOutcomes) {
+                const outcomeValue =
+                    typeof result.outcome === 'object' &&
+                    result.outcome !== null
+                        ? result.outcome.value || result.outcome.type
+                        : result.outcome
+
+                if (outcomeValue === 'failed') {
+                    const rule = result.rule
+                    if (!rule) {
+                        continue
+                    }
+
+                    const ruleUri = rule.uri || ''
                     const ruleId = ruleUri
-                        ? ruleUri.split('/').pop()
+                        ? ruleUri.split('/').pop() || 'alfa-rule'
                         : 'alfa-rule'
 
-                    violationsForProcess.push({
-                        id: ruleId,
-                        impact: 'serious',
-                        description: ruleDescription,
-                        help: ruleDescription,
-                        helpUrl: ruleUri || 'https://alfa.siteimprove.com/',
-                        tags: [],
-                        nodes: [
-                            {
-                                html: 'Target element details (see Alfa report for specifics)',
-                                failureSummary: ruleRationale,
-                            },
-                        ],
+                    const ruleDescription =
+                        rule.requirement?.title || 'No description available'
+                    const ruleRationale =
+                        rule.rationale || 'No rationale available'
+
+                    let targetHtml = 'Unknown Element'
+                    if (result.target) {
+                        targetHtml =
+                            result.target.pointer ||
+                            result.target.path ||
+                            (typeof result.target === 'string'
+                                ? result.target
+                                : 'HTML Element')
+                    }
+
+                    if (!violationsMap.has(ruleId)) {
+                        violationsMap.set(ruleId, {
+                            id: ruleId,
+                            impact: 'serious',
+                            description: ruleDescription,
+                            help: ruleDescription,
+                            helpUrl: ruleUri || 'https://alfa.siteimprove.com/',
+                            tags: [],
+                            nodes: [],
+                        })
+                    }
+
+                    violationsMap.get(ruleId).nodes.push({
+                        html: targetHtml,
+                        failureSummary: ruleRationale,
                     })
                 }
-            })
+            }
+
+            const violationsForProcess = Array.from(violationsMap.values())
 
             if (violationsForProcess.length) {
                 processViolations(currentPath, violationsForProcess, errorList)
