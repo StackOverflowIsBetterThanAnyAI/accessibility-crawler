@@ -29,12 +29,20 @@ export const runAlfaAudit = (
             const violationsMap = new Map<string, any>()
 
             for (const result of rawOutcomes) {
-                const outcomeValue =
-                    typeof result.outcome === 'object' &&
-                    result.outcome !== null
-                        ? result.outcome.value || result.outcome.type
-                        : result.outcome
+                let outcomeValue = ''
 
+                if (result.outcome) {
+                    if (typeof result.outcome === 'string') {
+                        outcomeValue = result.outcome.toLowerCase()
+                    } else if (typeof result.outcome === 'object') {
+                        outcomeValue = (
+                            result.outcome.value ||
+                            result.outcome.type ||
+                            result.outcome.id ||
+                            ''
+                        ).toLowerCase()
+                    }
+                }
                 if (outcomeValue === 'failed') {
                     const rule = result.rule
                     if (!rule) {
