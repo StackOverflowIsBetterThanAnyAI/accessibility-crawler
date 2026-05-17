@@ -28,7 +28,14 @@ export const runAlfaAudit = (
             const rawOutcomes = jsonRepresentation.outcomes || []
             const violationsMap = new Map<string, any>()
 
-            const blacklistedRules = ['sia-r3','sia-r66', 'sia-r83','sia-r111']
+            // AAA rules
+            const blacklistedRules = [
+                'sia-r3',
+                'sia-r66',
+                'sia-r83',
+                'sia-r96',
+                'sia-r111',
+            ]
 
             for (const result of rawOutcomes) {
                 const outcomeValue =
