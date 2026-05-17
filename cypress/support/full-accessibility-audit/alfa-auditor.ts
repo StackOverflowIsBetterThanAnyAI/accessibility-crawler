@@ -29,21 +29,15 @@ export const runAlfaAudit = (
             const violationsMap = new Map<string, any>()
 
             for (const result of rawOutcomes) {
-                let outcomeValue = ''
+                const outcomeValue =
+                    typeof result.outcome === 'object' &&
+                    result.outcome !== null
+                        ? result.outcome.value ||
+                          result.outcome.type ||
+                          result.outcome.id
+                        : result.outcome
 
-                if (result.outcome) {
-                    if (typeof result.outcome === 'string') {
-                        outcomeValue = result.outcome.toLowerCase()
-                    } else if (typeof result.outcome === 'object') {
-                        outcomeValue = (
-                            result.outcome.value ||
-                            result.outcome.type ||
-                            result.outcome.id ||
-                            ''
-                        ).toLowerCase()
-                    }
-                }
-                if (outcomeValue === 'failed') {
+                if (String(outcomeValue).toLowerCase() === 'failed') {
                     const rule = result.rule
                     if (!rule) {
                         continue
@@ -55,17 +49,22 @@ export const runAlfaAudit = (
                         : 'alfa-rule'
 
                     const ruleDescription =
-                        rule.requirement?.title || 'No description available'
+                        rule.requirement?.title ||
+                        (rule.requirements && rule.requirements[0]?.title) ||
+                        `Alfa Rule ${ruleId}`
+
                     const ruleRationale =
-                        rule.rationale || 'No rationale available'
+                        result.rationale ||
+                        rule.rationale ||
+                        `element fails rule ${ruleId}.`
 
                     let targetHtml = 'Unknown Element'
                     if (result.target) {
                         targetHtml =
                             result.target.pointer ||
                             result.target.path ||
-                            (typeof result.target === 'string'
-                                ? result.target
+                            (result.target.tagName
+                                ? `<${result.target.tagName.toLowerCase()}>`
                                 : 'HTML Element')
                     }
 
