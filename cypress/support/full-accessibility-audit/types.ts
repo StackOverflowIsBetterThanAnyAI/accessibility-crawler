@@ -32,6 +32,13 @@ export type CustomAuditCallback = (
     violations: CustomViolationReturnType[]
 ) => void
 
+export type ErrorListType = {
+    id: string
+    message: string
+    viewports: ViewportType[]
+    uniqueKey: string
+}
+
 export type W3CActTestCaseType = {
     ruleId: string
     ruleName: string
