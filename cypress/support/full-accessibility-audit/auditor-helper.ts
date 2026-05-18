@@ -71,6 +71,23 @@ export const processViolations = (
     currentViewport: ViewportType
 ) => {
     violations.forEach((violation) => {
+        const nodesCount = violation.nodes.length
+
+        Cypress.log({
+            displayName: 'a11y error!',
+            message: `${violation.id} on ${nodesCount} Node${nodesCount !== 1 ? 's' : ''}`,
+            consoleProps: () => ({
+                Command: 'ally error!',
+                Id: violation.id,
+                Impact: violation.impact,
+                Tags: violation.tags,
+                Description: violation.description,
+                Help: violation.help,
+                Helpurl: violation.helpUrl,
+                Nodes: violation.nodes,
+            }),
+        })
+
         const tagString =
             violation.tags
                 .filter((tag: string) => /^wcag/i.test(tag))
