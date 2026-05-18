@@ -41,6 +41,7 @@ export const checkFirstValidMetaRefresh = (
                     'To pass level AAA: Avoid any automatic refresh entirely.',
                 ],
                 tags: ['wcag2a', 'wcag221'],
+                element: firstValidElement!,
             })
         )
     }
@@ -61,6 +62,7 @@ export const checkFirstValidMetaRefresh = (
                     'To pass level AAA: Avoid any automatic refresh entirely.',
                 ],
                 tags: ['wcag2aa', 'wcag224'],
+                element: firstValidElement!,
             })
         )
     }
@@ -138,6 +140,7 @@ export const checkValidMetaViewport = (
                         : '',
                 ],
                 tags: ['wcag2aa', 'wcag144'],
+                element: viewport[0],
             })
         )
     }

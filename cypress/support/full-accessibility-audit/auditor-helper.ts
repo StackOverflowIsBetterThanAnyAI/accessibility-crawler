@@ -1,11 +1,15 @@
 import axe from 'axe-core'
 import { formatWCAGTag } from './format-wcag-tag'
-import { CustomViolationReturnType, CustomViolationType } from './types'
+import {
+    CustomViolationReturnType,
+    CustomViolationType,
+    ViewportType,
+} from './types'
 
 export const createCustomViolation = (
-    data: CustomViolationType
+    data: CustomViolationType & { element?: HTMLElement }
 ): CustomViolationReturnType => {
-    const { failureSummary, html, impact, ...rest } = data
+    const { failureSummary, html, impact, element, ...rest } = data
     return {
         ...rest,
         impact,
@@ -14,16 +18,58 @@ export const createCustomViolation = (
                 failureSummary: `Fix all of the following:\n• ${failureSummary.filter((item) => item).join('\n• ')}`,
                 html,
                 impact,
-                target: [html],
-            },
+                target: [],
+                element: element,
+            } as any,
         ],
     }
+}
+
+const getUniqueSelector = (element: HTMLElement | null): string => {
+    if (!element) {
+        return 'unknown-element'
+    }
+    if (element.id) {
+        return `#${element.id}`
+    }
+
+    const path: string[] = []
+    let current: HTMLElement | null = element
+
+    while (current && current.nodeType === Node.ELEMENT_NODE) {
+        if (current.id) {
+            path.unshift(`#${current.id}`)
+            break
+        }
+
+        let siblingIndex = 1
+        let sibling = current.previousElementSibling
+
+        while (sibling) {
+            if (sibling.tagName === current.tagName) {
+                siblingIndex++
+            }
+            sibling = sibling.previousElementSibling
+        }
+
+        const tagName = current.tagName.toLowerCase()
+        path.unshift(`${tagName}:nth-of-type(${siblingIndex})`)
+        current = current.parentElement as HTMLElement | null
+    }
+
+    return path.join(' > ')
 }
 
 export const processViolations = (
     currentPath: string,
     violations: (CustomViolationReturnType | axe.Result)[],
-    errorList: { id: string; message: string }[]
+    errorList: {
+        id: string
+        message: string
+        viewports: ViewportType[]
+        uniqueKey: string
+    }[],
+    currentViewport: ViewportType
 ) => {
     violations.forEach((violation) => {
         const nodesCount = violation.nodes.length
@@ -49,24 +95,68 @@ export const processViolations = (
                 .map((tag: string) => formatWCAGTag(tag))
                 .join(', ') || 'no WCAG reference'
 
-        violation.nodes.forEach(
-            (
-                node:
-                    | CustomViolationReturnType['nodes'][0]
-                    | axe.Result['nodes'][0]
-            ) => {
+        violation.nodes.forEach((node: any) => {
+            let exactDomLocation = ''
+
+            // 1. Prüfen, ob das Target echte CSS-Selektoren von Axe-Core enthält
+            if (
+                Array.isArray(node.target) &&
+                node.target.length > 0 &&
+                !node.target[0].startsWith('<')
+            ) {
+                exactDomLocation = node.target.join(' > ')
+            } else {
+                // 2. Custom-Checks: Sicheres Auslesen des Elements ohne Absturzrisiko
+                let rawElement: HTMLElement | null = null
+
+                if (node.element) {
+                    rawElement = node.element
+                } else if (node.html) {
+                    // Der try-catch Block verhindert den "not a valid selector" Absturz komplett!
+                    try {
+                        rawElement = document.querySelector(node.html)
+                    } catch (e) {
+                        // Wenn node.html valider HTML-Code statt eines Selektors ist,
+                        // bleibt rawElement einfach null. Kein Absturz!
+                        rawElement = null
+                    }
+                }
+
+                exactDomLocation = getUniqueSelector(rawElement)
+            }
+
+            const uniqueKey = `${currentPath}-${violation.id}-${exactDomLocation}`
+
+            const existingError = errorList.find(
+                (err) => err.uniqueKey === uniqueKey
+            )
+
+            if (existingError) {
+                if (!existingError.viewports.includes(currentViewport)) {
+                    existingError.viewports.push(currentViewport)
+
+                    existingError.message = existingError.message.replace(
+                        /Viewport: Only found on.*/,
+                        `Viewport: Found on mobile & desktop viewports.`
+                    )
+                }
+            } else {
                 const formattedMessage =
                     `issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
                     `${violation.help}.\n\n` +
                     `Element: ${node.html}\n\n` +
+                    `Exact DOM Position: ${exactDomLocation}\n\n` +
                     `${node.failureSummary?.replace(/\n\s(?!Fix)/g, '\n•')}\n\n` +
+                    `Viewport: Only found on ${currentViewport} viewport.\n\n` +
                     `Help: ${violation.helpUrl}`
 
                 errorList.push({
                     id: violation.id,
+                    uniqueKey: uniqueKey,
                     message: formattedMessage,
+                    viewports: [currentViewport],
                 })
             }
-        )
+        })
     })
 }

@@ -44,6 +44,7 @@ export const checkBadAltTextImage = (
                         'Do not use only one character.',
                     ],
                     tags: ['wcag2a', 'wcag111'],
+                    element: img,
                 })
             )
         }
@@ -103,6 +104,7 @@ export const checkAltTextInputImage = (
                         'Alternatively, use a descriptive title attribute.',
                     ],
                     tags: ['wcag2a', 'wcag111'],
+                    element: img,
                 })
             )
             return
@@ -132,6 +134,7 @@ export const checkAltTextInputImage = (
                         'Do not use only one character.',
                     ],
                     tags: ['wcag2a', 'wcag111'],
+                    element: img,
                 })
             )
         }
@@ -185,6 +188,7 @@ export const checkListStructure = (
                             'Direct children of a list must be <li> elements or have the role "listitem".',
                         ],
                         tags: ['wcag2a', 'wcag131'],
+                        element: list,
                     })
                 )
             }
@@ -222,6 +226,7 @@ export const checkVideoCaptions = (
                         'Provide a <track kind="captions"> element in the language of the video.',
                     ],
                     tags: ['wcag2a', 'wcag122'],
+                    element: video,
                 })
             )
         }
@@ -263,6 +268,7 @@ export const checkFieldsetLegend = (
                         'Only use one <legend> element per <fieldset>.',
                     ],
                     tags: ['wcag2a', 'wcag131'],
+                    element: fieldset,
                 })
             )
         }
@@ -302,6 +308,7 @@ export const checkHeadingOrder = (
                         `Change this heading to <h${lastLevel + 1}> or higher.`,
                     ],
                     tags: ['wcag2a', 'wcag131'],
+                    element: el,
                 })
             )
         }
@@ -384,6 +391,7 @@ export const checkNonEmptyHeading = (
                         'Add text content, an aria-label, or descriptive alt-text for images inside the heading.',
                     ],
                     tags: ['wcag2a', 'wcag131'],
+                    element: el,
                 })
             )
         }
@@ -440,6 +448,7 @@ export const checkAdjacentLinks = (
                             'Check that the <a> element contains an <img> element that has either a null alt attribute value or a value that supplements the link text and describes the image.',
                         ],
                         tags: ['wcag2a', 'wcag111'],
+                        element: currentLink,
                     })
                 )
             }
@@ -483,6 +492,7 @@ export const checkConflictDecorativeRole = (
                         'Or remove the role="presentation"/"none" if the element is actually important.',
                     ],
                     tags: ['wcag2a', 'wcag111'],
+                    element: el,
                 })
             )
         }
@@ -513,6 +523,7 @@ export const checkConflictDecorativeRole = (
                         'Or remove the role="presentation"/"none" if the element is purely decorative.',
                     ],
                     tags: ['wcag2a', 'wcag111'],
+                    element: el,
                 })
             )
         }
@@ -589,6 +600,7 @@ export const checkDetailsSummary = (
                         'The summary element must not have a decorative role (presentation/none).',
                     ],
                     tags: ['wcag2a', 'wcag412'],
+                    element: $summary.length ? $summary[0] : $details[0],
                 })
             )
         }
@@ -664,6 +676,7 @@ export const checkProhibitedAria = (
                             `The attribute "${attr}" is not allowed here because this role is purely structural and cannot be named.`,
                         ],
                         tags: ['wcag2a', 'wcag131'],
+                        element: el,
                     })
                 )
             })
@@ -744,6 +757,7 @@ export const checkLanguageMismatch = (
                         'Ensure the "lang" attribute correctly identifies the primary language of the text content.',
                     ],
                     tags: ['wcag2aa', 'wcag312'],
+                    element: el,
                 })
             )
         }
@@ -849,6 +863,7 @@ export const checkLabelInNameStrict = (
                         'The visible text of a widget must be included in the accessible name.',
                     ],
                     tags: ['wcag2a', 'wcag253'],
+                    element: el,
                 })
             )
         }

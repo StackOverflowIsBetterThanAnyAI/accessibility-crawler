@@ -49,6 +49,7 @@ export const checkPrimaryLanguageMismatch = (
                     'Ensure the "lang" attribute correctly identifies the primary language of the site.',
                 ],
                 tags: ['wcag2a', 'wcag311'],
+                element: $html[0],
             })
         )
     }

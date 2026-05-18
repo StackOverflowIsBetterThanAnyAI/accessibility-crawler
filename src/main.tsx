@@ -12,6 +12,22 @@ const Home = () => (
     <div>
         <p>Home</p>
         <p>Welcome</p>
+        <style>
+            {`
+          .mobile-only {
+            display: block;
+            color: lightgray;
+          }
+
+          @media (min-width: 601px) {
+            .mobile-only {
+              display: none;
+            }
+          }
+        `}
+        </style>
+        <div className="mobile-only">mobile only content</div>
+        <div className="mobile-only">mobile only content</div>
         <br />
         <a href="/handbuch.pdf">Download PDF</a>
         <br />
