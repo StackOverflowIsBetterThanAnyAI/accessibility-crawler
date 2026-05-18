@@ -180,7 +180,7 @@ export const checkListStructure = (
                         impact: 'serious',
                         description:
                             'List element contains invalid child elements',
-                        help: 'Elements with a list role must only contain listitem elements.',
+                        help: 'Elements with a list role must only contain listitem elements',
                         helpUrl:
                             'https://www.w3.org/WAI/WCAG22/Techniques/html/H48',
                         html: list.outerHTML,
