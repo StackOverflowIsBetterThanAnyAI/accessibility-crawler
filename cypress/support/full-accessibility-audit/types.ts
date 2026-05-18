@@ -59,3 +59,5 @@ export type ViolationNodeType = {
     impact: ImpactType
     target: [string]
 }
+
+export type ViewportType = 'mobile' | 'desktop'

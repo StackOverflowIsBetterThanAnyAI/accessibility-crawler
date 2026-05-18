@@ -1,6 +1,10 @@
 import axe from 'axe-core'
 import { formatWCAGTag } from './format-wcag-tag'
-import { CustomViolationReturnType, CustomViolationType } from './types'
+import {
+    CustomViolationReturnType,
+    CustomViolationType,
+    ViewportType,
+} from './types'
 
 export const createCustomViolation = (
     data: CustomViolationType
@@ -23,7 +27,13 @@ export const createCustomViolation = (
 export const processViolations = (
     currentPath: string,
     violations: (CustomViolationReturnType | axe.Result)[],
-    errorList: { id: string; message: string }[]
+    errorList: {
+        id: string
+        message: string
+        viewports: ViewportType[]
+        uniqueKey: string
+    }[],
+    currentViewport: ViewportType
 ) => {
     violations.forEach((violation) => {
         const nodesCount = violation.nodes.length
@@ -55,17 +65,31 @@ export const processViolations = (
                     | CustomViolationReturnType['nodes'][0]
                     | axe.Result['nodes'][0]
             ) => {
-                const formattedMessage =
-                    `issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
-                    `${violation.help}.\n\n` +
-                    `Element: ${node.html}\n\n` +
-                    `${node.failureSummary?.replace(/\n\s(?!Fix)/g, '\n•')}\n\n` +
-                    `Help: ${violation.helpUrl}`
+                const uniqueKey = `${currentPath}-${violation.id}-${node.html}`
 
-                errorList.push({
-                    id: violation.id,
-                    message: formattedMessage,
-                })
+                const existingError = errorList.find(
+                    (err) => err.uniqueKey === uniqueKey
+                )
+
+                if (existingError) {
+                    if (!existingError.viewports.includes(currentViewport)) {
+                        existingError.viewports.push(currentViewport)
+                    }
+                } else {
+                    const formattedMessage =
+                        `issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
+                        `${violation.help}.\n\n` +
+                        `Element: ${node.html}\n\n` +
+                        `${node.failureSummary?.replace(/\n\s(?!Fix)/g, '\n•')}\n\n` +
+                        `Help: ${violation.helpUrl}`
+
+                    errorList.push({
+                        id: violation.id,
+                        uniqueKey: uniqueKey,
+                        message: formattedMessage,
+                        viewports: [currentViewport],
+                    })
+                }
             }
         )
     })
