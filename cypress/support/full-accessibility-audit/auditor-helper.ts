@@ -24,6 +24,41 @@ export const createCustomViolation = (
     }
 }
 
+const getUniqueSelector = (element: HTMLElement | null): string => {
+    if (!element) {
+        return 'unknown-element'
+    }
+    if (element.id) {
+        return `#${element.id}`
+    }
+
+    const path: string[] = []
+    let current: HTMLElement | null = element
+
+    while (current && current.nodeType === Node.ELEMENT_NODE) {
+        if (current.id) {
+            path.unshift(`#${current.id}`)
+            break
+        }
+
+        let siblingIndex = 1
+        let sibling = current.previousElementSibling
+
+        while (sibling) {
+            if (sibling.tagName === current.tagName) {
+                siblingIndex++
+            }
+            sibling = sibling.previousElementSibling
+        }
+
+        const tagName = current.tagName.toLowerCase()
+        path.unshift(`${tagName}:nth-of-type(${siblingIndex})`)
+        current = current.parentElement as HTMLElement | null
+    }
+
+    return path.join(' > ')
+}
+
 export const processViolations = (
     currentPath: string,
     violations: (CustomViolationReturnType | axe.Result)[],
@@ -36,23 +71,6 @@ export const processViolations = (
     currentViewport: ViewportType
 ) => {
     violations.forEach((violation) => {
-        const nodesCount = violation.nodes.length
-
-        Cypress.log({
-            displayName: 'a11y error!',
-            message: `${violation.id} on ${nodesCount} Node${nodesCount !== 1 ? 's' : ''}`,
-            consoleProps: () => ({
-                Command: 'ally error!',
-                Id: violation.id,
-                Impact: violation.impact,
-                Tags: violation.tags,
-                Description: violation.description,
-                Help: violation.help,
-                Helpurl: violation.helpUrl,
-                Nodes: violation.nodes,
-            }),
-        })
-
         const tagString =
             violation.tags
                 .filter((tag: string) => /^wcag/i.test(tag))
@@ -65,7 +83,18 @@ export const processViolations = (
                     | CustomViolationReturnType['nodes'][0]
                     | axe.Result['nodes'][0]
             ) => {
-                const uniqueKey = `${currentPath}-${violation.id}-${node.html}`
+                let exactDomLocation = ''
+
+                if (Array.isArray(node.target) && node.target.length > 0) {
+                    exactDomLocation = node.target.join(' > ')
+                } else {
+                    const rawElement =
+                        (node as any).element ||
+                        document.querySelector(node.html)
+                    exactDomLocation = getUniqueSelector(rawElement)
+                }
+
+                const uniqueKey = `${currentPath}-${violation.id}-${exactDomLocation}`
 
                 const existingError = errorList.find(
                     (err) => err.uniqueKey === uniqueKey
@@ -80,6 +109,7 @@ export const processViolations = (
                         `issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
                         `${violation.help}.\n\n` +
                         `Element: ${node.html}\n\n` +
+                        `Exact DOM Position: ${exactDomLocation}\n\n` +
                         `${node.failureSummary?.replace(/\n\s(?!Fix)/g, '\n•')}\n\n` +
                         `Help: ${violation.helpUrl}`
 
