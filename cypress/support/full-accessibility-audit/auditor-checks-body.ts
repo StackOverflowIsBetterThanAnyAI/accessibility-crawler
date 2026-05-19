@@ -55,6 +55,46 @@ export const checkBadAltTextImage = (
     }
 }
 
+export const checkBadFormLabels = (
+    $body: JQuery<HTMLElement>,
+    callback: CustomAuditCallback
+) => {
+    const badLabelPattern = /^[^\p{L}0-9]+$/iu
+    const violations: CustomViolationReturnType[] = []
+
+    $body.find('label').each((_, label) => {
+        const labelText = Cypress.$(label).text()?.trim() || ''
+
+        const isNoneOrBadLabelText =
+            labelText.length <= 1 || badLabelPattern.test(labelText)
+
+        if (isNoneOrBadLabelText) {
+            violations.push(
+                createCustomViolation({
+                    id: 'bad-form-label',
+                    impact: 'serious',
+                    description: `The label "${labelText}" is uninformative`,
+                    help: 'Form labels must clearly describe the purpose of the input field and cannot be empty or consist only of non-alphanumeric characters',
+                    helpUrl:
+                        'https://www.w3.org/WAI/WCAG22/Understanding/headings-and-labels.html',
+                    html: label.outerHTML,
+                    failureSummary: [
+                        'Provide a meaningful, visible text within the label.',
+                        'Do not use only special characters or symbols.',
+                        'Do not use only one single character.',
+                    ],
+                    tags: ['wcag2aa', 'wcag246'],
+                    element: label,
+                })
+            )
+        }
+    })
+
+    if (violations.length) {
+        callback(violations)
+    }
+}
+
 export const checkAltTextInputImage = (
     $body: JQuery<HTMLElement>,
     callback: CustomAuditCallback
