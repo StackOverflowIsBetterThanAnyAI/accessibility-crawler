@@ -28,11 +28,13 @@ export const getInternalLinks = (baseUrl: string) => {
                     // remove hash for consistent crawling
                     url.hash = ''
 
-                    // ignore links that point to files
+                    // ignore links that point to files other than .html
                     const path = url.pathname
                     const lastSegment = path.split('/').pop() || ''
                     if (lastSegment.includes('.')) {
-                        return null
+                        if (!lastSegment.endsWith('.html')) {
+                            return null
+                        }
                     }
 
                     return url.href
