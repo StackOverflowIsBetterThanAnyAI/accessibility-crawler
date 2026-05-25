@@ -3,10 +3,7 @@ import { Audit } from '@siteimprove/alfa-test-utils/audit'
 import { processViolations } from './auditor-helper'
 import { waitForNetworkIdle } from './wait-for-network-idle'
 
-export const runAlfaAudit = (
-    currentPath: string,
-    errorList: { id: string; message: string }[]
-) => {
+export const runAlfaAudit = (currentPath: string, errorList: any[]) => {
     waitForNetworkIdle()
 
     cy.document()
@@ -90,7 +87,12 @@ export const runAlfaAudit = (
             const violationsForProcess = Array.from(violationsMap.values())
 
             if (violationsForProcess.length) {
-                processViolations(currentPath, violationsForProcess, errorList)
+                processViolations(
+                    currentPath,
+                    violationsForProcess,
+                    errorList,
+                    'desktop'
+                )
             }
         })
 }
