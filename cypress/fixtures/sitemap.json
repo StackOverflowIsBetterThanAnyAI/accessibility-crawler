@@ -1,9 +1,0 @@
-{
-    "config": {
-        "only": ["/"],
-        "included": [" /test", "*pattern/*"],
-        "excluded": ["/about/*", "/contact*", "/test*", "/"]
-    },
-    "urls": ["/"],
-    "generatedAt": "2026-05-12T11:00:27.787Z"
-}
