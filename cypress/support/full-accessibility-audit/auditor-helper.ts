@@ -5,6 +5,7 @@ import {
     CustomViolationType,
     ErrorListType,
     ViewportType,
+    ViolationNodeType,
 } from './types'
 
 export const createCustomViolation = (
@@ -21,7 +22,7 @@ export const createCustomViolation = (
                 impact,
                 target: [],
                 element: element,
-            } as any,
+            } as ViolationNodeType,
         ],
     }
 }

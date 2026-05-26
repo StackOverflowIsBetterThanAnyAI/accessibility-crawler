@@ -1,4 +1,5 @@
 import { runAxeAudit } from '../support/full-accessibility-audit/auditor'
+import { ErrorListType } from '../support/full-accessibility-audit/types'
 import { addLeadingSlash } from '../support/full-accessibility-audit/url-helper'
 
 describe('Accessibility Audit: Separated Crawler from Auditor', () => {
@@ -19,18 +20,18 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         sitemap = { urls: [] }
     }
 
-    const accessibilityErrors: { id: string; message: string }[] = []
+    const errorList: ErrorListType[] = []
 
     sitemap.urls.forEach((path) => {
         it(`Check: ${path}`, () => {
             const url = baseUrl + addLeadingSlash(path)
             cy.visit(url)
-            runAxeAudit(path, accessibilityErrors)
+            runAxeAudit(path, errorList)
         })
     })
 
     it('--- Accessibility Audit Summary ---', () => {
-        const totalIssues = accessibilityErrors.length
+        const totalIssues = errorList.length
         const jsonPath = 'cypress/fixtures/full-accessibility-audit.json'
         const mdPath = 'cypress/fixtures/full-accessibility-audit.md'
 
@@ -58,7 +59,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
                 totalIssues: totalIssues,
                 timestamp: new Date().toISOString(),
             },
-            issues: accessibilityErrors,
+            issues: errorList,
         })
 
         let mdContent = `# Full Accessibility Audit \n\n`
@@ -74,7 +75,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         } else {
             mdContent += `## Found ${totalIssues} issues\n\n`
 
-            accessibilityErrors.forEach((error, index) => {
+            errorList.forEach((error, index) => {
                 const formattedMessage = error.message
                     .replace('Element: ', '\n**Element:**\n```html\n')
                     .replace(
@@ -98,12 +99,12 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
                     'Keep in mind that there may be other accessibility issues not covered by this audit.'
                 )
             } else {
-                accessibilityErrors.forEach((error, index) => {
+                errorList.forEach((error, index) => {
                     cy.log(`${index + 1}. ${error.message}`)
                 })
 
                 cy.then(() => {
-                    const errorMessage = accessibilityErrors
+                    const errorMessage = errorList
                         .map((err) => err.message)
                         .join(
                             '\n\n--------------------------------------------------------\n\n'

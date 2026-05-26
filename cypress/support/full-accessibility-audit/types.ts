@@ -64,7 +64,8 @@ export type ViolationNodeType = {
     failureSummary: string
     html: string
     impact: ImpactType
-    target: [string]
+    target: []
+    element: HTMLElement
 }
 
 export type ViewportType = 'mobile' | 'desktop'
