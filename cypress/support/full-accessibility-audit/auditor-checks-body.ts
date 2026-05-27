@@ -9,7 +9,7 @@ export const checkBadAltTextImage = (
 ) => {
     const badAltPatterns = [
         /\.(jpg|jpeg|png|gif|tiff|raw|svg|webp|avif)$/i,
-        /(graphic|picture|image|photo|icon)/i,
+        /(graphic|picture|image|photo|icon|logo)/i,
         /(grafik|abbildung|bild|foto|symbol)/i,
         /placeholder/i,
         /platzhalter/i,
@@ -55,54 +55,16 @@ export const checkBadAltTextImage = (
     }
 }
 
-export const checkBadFormLabels = (
-    $body: JQuery<HTMLElement>,
-    callback: CustomAuditCallback
-) => {
-    const badLabelPattern = /^[^\p{L}0-9]+$/iu
-    const violations: CustomViolationReturnType[] = []
-
-    $body.find('label').each((_, label) => {
-        const labelText = Cypress.$(label).text()?.trim() || ''
-
-        const isNoneOrBadLabelText =
-            labelText.length <= 1 || badLabelPattern.test(labelText)
-
-        if (isNoneOrBadLabelText) {
-            violations.push(
-                createCustomViolation({
-                    id: 'bad-form-label',
-                    impact: 'serious',
-                    description: `The label "${labelText}" is uninformative`,
-                    help: 'Form labels must clearly describe the purpose of the input field and cannot be empty or consist only of non-alphanumeric characters',
-                    helpUrl:
-                        'https://www.w3.org/WAI/WCAG22/Understanding/headings-and-labels.html',
-                    html: label.outerHTML,
-                    failureSummary: [
-                        'Provide a meaningful, visible text within the label.',
-                        'Do not use only special characters or symbols.',
-                        'Do not use only one single character.',
-                    ],
-                    tags: ['wcag2aa', 'wcag246'],
-                    element: label,
-                })
-            )
-        }
-    })
-
-    if (violations.length) {
-        callback(violations)
-    }
-}
-
 export const checkAltTextInputImage = (
     $body: JQuery<HTMLElement>,
     callback: CustomAuditCallback
 ) => {
     const badAltPatterns = [
         /\.(jpg|jpeg|png|gif|tiff|raw|svg|webp|avif)$/i,
-        /(graphic|picture|image|photo|icon)/i,
+        /(graphic|picture|image|photo|icon|logo)/i,
+        /(grafik|abbildung|bild|foto|symbol)/i,
         /placeholder/i,
+        /platzhalter/i,
         /^[0-9]+$/,
         /^[^a-z0-9]+$/i,
         /^.{1}$/,
@@ -175,6 +137,46 @@ export const checkAltTextInputImage = (
                     ],
                     tags: ['wcag2a', 'wcag111'],
                     element: img,
+                })
+            )
+        }
+    })
+
+    if (violations.length) {
+        callback(violations)
+    }
+}
+
+export const checkBadFormLabels = (
+    $body: JQuery<HTMLElement>,
+    callback: CustomAuditCallback
+) => {
+    const badLabelPattern = /^[^\p{L}0-9]+$/iu
+    const violations: CustomViolationReturnType[] = []
+
+    $body.find('label').each((_, label) => {
+        const labelText = Cypress.$(label).text()?.trim() || ''
+
+        const isNoneOrBadLabelText =
+            labelText.length <= 1 || badLabelPattern.test(labelText)
+
+        if (isNoneOrBadLabelText) {
+            violations.push(
+                createCustomViolation({
+                    id: 'bad-form-label',
+                    impact: 'serious',
+                    description: `The label "${labelText}" is uninformative`,
+                    help: 'Form labels must clearly describe the purpose of the input field and cannot be empty or consist only of non-alphanumeric characters',
+                    helpUrl:
+                        'https://www.w3.org/WAI/WCAG22/Understanding/headings-and-labels.html',
+                    html: label.outerHTML,
+                    failureSummary: [
+                        'Provide a meaningful, visible text within the label.',
+                        'Do not use only special characters or symbols.',
+                        'Do not use only one single character.',
+                    ],
+                    tags: ['wcag2aa', 'wcag246'],
+                    element: label,
                 })
             )
         }
@@ -288,7 +290,11 @@ export const checkFieldsetLegend = (
         const firstChild = $fieldset.children().first()
 
         const hasMultipleLegends = legend.length > 1
-        const hasValidLegend = legend.length && legend.text().trim().length
+
+        const legendText = legend.text().trim()
+        const hasValidLegend =
+            legend.length && legendText.length && /\p{L}/u.test(legendText)
+
         const isLegendFirst = firstChild.is('legend')
 
         if (!hasValidLegend || !isLegendFirst || hasMultipleLegends) {
@@ -305,7 +311,7 @@ export const checkFieldsetLegend = (
                     failureSummary: [
                         'Add a <legend> element with a meaningful text inside the <fieldset>.',
                         'The <legend> element must be the first child of the <fieldset>.',
-                        'Only use one <legend> element per <fieldset>.',
+                        'Use only one <legend> element per <fieldset>.',
                     ],
                     tags: ['wcag2a', 'wcag131'],
                     element: fieldset,
@@ -514,9 +520,9 @@ export const checkConflictDecorativeRole = (
         const tabIndex = $el.attr('tabindex')
 
         const isFocusable = tabIndex !== undefined && parseInt(tabIndex) >= 0
-        const hasAriaName = !!ariaLabel || !!ariaLabelledBy || !!title
+        const hasAccessibleName = !!ariaLabel || !!ariaLabelledBy || !!title
 
-        if (isFocusable || hasAriaName) {
+        if (isFocusable || hasAccessibleName) {
             violations.push(
                 createCustomViolation({
                     id: 'conflict-decorative-role',
@@ -528,7 +534,7 @@ export const checkConflictDecorativeRole = (
                         'https://www.w3.org/WAI/standards-guidelines/act/rules/46ca7f/proposed/',
                     html: el.outerHTML,
                     failureSummary: [
-                        'Remove the aria-label/-labelledby, title or non-empty alt attribute if the element is purely decorative.',
+                        'Remove the aria-label or aria-labelledby attribute, title, or custom tabindex if the element is purely decorative.',
                         'Or remove the role="presentation"/"none" if the element is actually important.',
                     ],
                     tags: ['wcag2a', 'wcag111'],
@@ -559,8 +565,8 @@ export const checkConflictDecorativeRole = (
                         'https://www.w3.org/WAI/standards-guidelines/act/rules/46ca7f/proposed/',
                     html: el.outerHTML,
                     failureSummary: [
-                        'Remove the non-empty alt attribute if the element is actually important.',
-                        'Or remove the role="presentation"/"none" if the element is purely decorative.',
+                        'Remove aria-label or aria-labelledby if the image is purely decorative.',
+                        'Or replace alt="" with a meaningful alt text if the image conveys information.',
                     ],
                     tags: ['wcag2a', 'wcag111'],
                     element: el,
