@@ -8,19 +8,28 @@ on:
         type: string
         default: "24"
         description: "node.js version to use"
+
       app_port:
         required: true
         type: string
         description: "provide the correct port for your local server"
+
       start_command:
         required: true
         type: string
         description: "provide the command to start your local server with the correct port and host flags"
 
+      skip_crawler:
+        required: false
+        type: boolean
+        default: false
+        description: "skip crawler and run audit directly"
+
 jobs:
   Full_Accessibility_Audit:
     name: Full Accessibility Audit
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Client-App
         uses: actions/checkout@v4
@@ -44,6 +53,12 @@ jobs:
 
           GATEWAY_IP=$(docker network inspect bridge -f '{{ (index .IPAM.Config 0).Gateway }}')
 
+          if [ "${{ inputs.skip_crawler }}" = "true" ]; then
+            AUDIT_COMMAND="npm run cy:run-audit"
+          else
+            AUDIT_COMMAND="npm run cy:run-crawler && npm run cy:run-audit"
+          fi
+
           docker run --rm \
             --ipc=host \
             -e CYPRESS_BASE_URL="http://$GATEWAY_IP:${{ inputs.app_port }}" \
@@ -52,8 +67,7 @@ jobs:
             ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest \
             sh -c "
               npx wait-on http://$GATEWAY_IP:${{ inputs.app_port }} --timeout 60000 && \
-              npm run cy:run-crawler && \
-              npm run cy:run-audit
+              $AUDIT_COMMAND
             "
 
       - name: Upload Audit
