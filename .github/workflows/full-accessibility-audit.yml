@@ -14,6 +14,12 @@ on:
         type: string
         description: "provide the correct port for your local server"
 
+      base_path:
+        required: false
+        type: string
+        default: "/"
+        description: "optional base path appended to localhost"
+
       start_command:
         required: true
         type: string
@@ -44,7 +50,7 @@ jobs:
         run: |
           npm ci
           ${{ inputs.start_command }} &
-          npx wait-on http://localhost:${{ inputs.app_port }} --timeout 60000
+          npx wait-on http://localhost:${{ inputs.app_port }}${{ inputs.base_path }} --timeout 60000
 
       - name: Run Full Accessibility Audit via GHCR Image
         run: |
@@ -59,14 +65,16 @@ jobs:
             AUDIT_COMMAND="npm run cy:run-crawler && npm run cy:run-audit"
           fi
 
+          BASE_URL="http://$GATEWAY_IP:${{ inputs.app_port }}${{ inputs.base_path }}"
+
           docker run --rm \
             --ipc=host \
-            -e CYPRESS_BASE_URL="http://$GATEWAY_IP:${{ inputs.app_port }}" \
+            -e CYPRESS_BASE_URL="$BASE_URL" \
             --add-host=host.docker.internal:host-gateway \
             -v ${{ github.workspace }}/audit:/app/cypress/fixtures \
             ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest \
             sh -c "
-              npx wait-on http://$GATEWAY_IP:${{ inputs.app_port }} --timeout 60000 && \
+              npx wait-on $BASE_URL --timeout 60000 && \
               $AUDIT_COMMAND
             "
 
