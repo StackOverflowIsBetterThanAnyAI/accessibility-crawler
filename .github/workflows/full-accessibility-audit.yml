@@ -17,7 +17,7 @@ on:
       base_path:
         required: false
         type: string
-        default: "/"
+        default: ""
         description: "optional base path appended to localhost"
 
       start_command:
