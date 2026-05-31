@@ -926,7 +926,9 @@ export const checkDynamicContrast = (
 ) => {
     const selector = 'a, button, [tabindex]:not([tabindex="-1"])'
 
-    cy.get(selector, { log: false }).then(($elements) => {
+    cy.get('body', { log: false }).then(($body) => {
+        const $elements = $body.find(selector)
+
         const $visibleElements = $elements.filter((_, el) => {
             const $el = Cypress.$(el)
             return !$el.is(':hidden') && $el.css('display') !== 'none'
@@ -936,7 +938,7 @@ export const checkDynamicContrast = (
             return
         }
 
-        cy.wrap($visibleElements).each(($el) => {
+        cy.wrap($visibleElements, { log: false }).each(($el) => {
             const el = $el[0]
 
             cy.wrap($el).trigger('mouseover', { force: true }).wait(50)
