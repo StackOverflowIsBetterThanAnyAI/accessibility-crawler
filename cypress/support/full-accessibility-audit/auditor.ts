@@ -22,7 +22,8 @@ export const runAxeAudit = (
     cy.wrap(viewports).each(
         (viewport: { name: ViewportType; width: number; height: number }) => {
             cy.viewport(viewport.width, viewport.height)
-            cy.wait(250)
+
+            waitForNetworkIdle()
 
             cy.checkA11y(
                 undefined,

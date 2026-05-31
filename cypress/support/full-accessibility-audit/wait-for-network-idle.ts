@@ -20,8 +20,7 @@ export const waitForNetworkIdle = (maxTimeout = 10000) => {
             elapsed += checkInterval
 
             if (timeIdle < idleThreshold && elapsed < maxTimeout) {
-                cy.wait(checkInterval, { log: false })
-                check()
+                cy.wait(checkInterval, { log: false }).then(check)
             }
         })
     }
