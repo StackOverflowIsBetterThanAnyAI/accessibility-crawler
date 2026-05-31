@@ -23,6 +23,8 @@ export const runAxeAudit = (
         (viewport: { name: ViewportType; width: number; height: number }) => {
             cy.viewport(viewport.width, viewport.height)
 
+            cy.wait(100)
+
             cy.checkA11y(
                 undefined,
                 {
