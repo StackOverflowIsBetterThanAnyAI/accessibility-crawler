@@ -919,3 +919,96 @@ export const checkLabelInNameStrict = (
         callback(violations)
     }
 }
+
+export const checkDynamicContrast = (
+    $body: JQuery<HTMLElement>,
+    callback: CustomAuditCallback
+) => {
+    const $interactiveElements = $body.find(
+        'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    if (!$interactiveElements.length) {
+        return
+    }
+
+    $interactiveElements.each((_, el) => {
+        const $el = Cypress.$(el)
+        cy.wrap($el).trigger('mouseover', { force: true }).wait(30)
+        cy.checkA11y(
+            el,
+            {
+                runOnly: {
+                    type: 'rule',
+                    values: ['color-contrast'],
+                },
+            },
+            (violations) => {
+                if (violations.length) {
+                    const customViolations = violations.map((v) => {
+                        const axeSummary =
+                            v.nodes[0]?.failureSummary ||
+                            'Element does not have sufficient color contrast.'
+                        return createCustomViolation({
+                            id: 'contrast-hover-state',
+                            impact: 'serious',
+                            description:
+                                'Elements must maintain sufficient contrast ratio in hover state',
+                            help: 'Elements must maintain sufficient contrast ratio when hovered',
+                            helpUrl:
+                                'https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html',
+                            html: el.outerHTML,
+                            failureSummary: [
+                                axeSummary,
+                                'Increase the color contrast of text and interactive elements to at least 4.5:1 for normal text and 3:1 for large text when hovered.',
+                            ],
+                            tags: ['wcag2aa', 'wcag143'],
+                            element: el,
+                        })
+                    })
+                    callback(customViolations)
+                }
+            },
+            true
+        )
+        cy.wrap($el).trigger('mouseout', { force: true })
+
+        cy.wrap($el).focus().wait(30)
+        cy.checkA11y(
+            el,
+            {
+                runOnly: {
+                    type: 'rule',
+                    values: ['color-contrast'],
+                },
+            },
+            (violations) => {
+                if (violations.length) {
+                    const customViolations = violations.map((v) => {
+                        const axeSummary =
+                            v.nodes[0]?.failureSummary ||
+                            'Element does not have sufficient color contrast.'
+                        return createCustomViolation({
+                            id: 'contrast-focus-state',
+                            impact: 'serious',
+                            description:
+                                'Elements must maintain sufficient contrast ratio in focus state',
+                            help: 'Elements must maintain sufficient contrast ratio when focused via keyboard',
+                            helpUrl:
+                                'https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html',
+                            html: el.outerHTML,
+                            failureSummary: [
+                                axeSummary,
+                                'Increase the color contrast of text and interactive elements to at least 4.5:1 for normal text and 3:1 for large text when focused.',
+                            ],
+                            tags: ['wcag2aa', 'wcag143'],
+                            element: el,
+                        })
+                    })
+                    callback(customViolations)
+                }
+            },
+            true
+        )
+        cy.wrap($el).blur()
+    })
+}
