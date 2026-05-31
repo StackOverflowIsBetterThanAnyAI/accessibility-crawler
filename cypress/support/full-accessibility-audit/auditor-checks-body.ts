@@ -924,23 +924,15 @@ export const checkDynamicContrast = (
     _$body: JQuery<HTMLElement>,
     callback: CustomAuditCallback
 ) => {
-    const selector = 'a, button, [tabindex]:not([tabindex="-1"])'
+    const selector =
+        'a[href]:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex^="-"]):not([disabled])'
 
     cy.get('body', { log: false }).then(($body) => {
         const $elements = $body.find(selector)
 
         const $visibleElements = $elements.filter((_, el) => {
             const $el = Cypress.$(el)
-
             if ($el.is(':hidden') || $el.css('display') === 'none') {
-                return false
-            }
-
-            if ($el.is(':disabled') || $el.attr('disabled') !== undefined) {
-                return false
-            }
-
-            if (el.tagName.toLowerCase() === 'a' && !$el.attr('href')) {
                 return false
             }
             return true
