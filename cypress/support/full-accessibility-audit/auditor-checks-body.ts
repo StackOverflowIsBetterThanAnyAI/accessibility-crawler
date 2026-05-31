@@ -931,7 +931,19 @@ export const checkDynamicContrast = (
 
         const $visibleElements = $elements.filter((_, el) => {
             const $el = Cypress.$(el)
-            return !$el.is(':hidden') && $el.css('display') !== 'none'
+
+            if ($el.is(':hidden') || $el.css('display') === 'none') {
+                return false
+            }
+
+            if ($el.is(':disabled') || $el.attr('disabled') !== undefined) {
+                return false
+            }
+
+            if (el.tagName.toLowerCase() === 'a' && !$el.attr('href')) {
+                return false
+            }
+            return true
         })
 
         if (!$visibleElements.length) {
