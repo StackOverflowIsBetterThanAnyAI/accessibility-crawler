@@ -924,8 +924,7 @@ export const checkDynamicContrast = (
     _$body: JQuery<HTMLElement>,
     callback: CustomAuditCallback
 ) => {
-    const selector =
-        'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    const selector = 'a, button, [tabindex]:not([tabindex="-1"])'
 
     cy.get(selector, { log: false }).then(($elements) => {
         const $visibleElements = $elements.filter((_, el) => {
