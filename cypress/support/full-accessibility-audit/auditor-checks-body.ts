@@ -945,7 +945,7 @@ export const checkDynamicContrast = (
         cy.wrap($visibleElements, { log: false }).each(($el) => {
             const el = $el[0]
 
-            cy.wrap($el).trigger('mouseover', { force: true }).wait(50)
+            cy.wrap($el).trigger('mouseover', { force: true })
             cy.checkA11y(
                 el,
                 { runOnly: { type: 'rule', values: ['color-contrast'] } },
@@ -979,7 +979,7 @@ export const checkDynamicContrast = (
             )
             cy.wrap($el).trigger('mouseout', { force: true })
 
-            cy.wrap($el).focus().wait(50)
+            cy.wrap($el).focus()
             cy.checkA11y(
                 el,
                 { runOnly: { type: 'rule', values: ['color-contrast'] } },
