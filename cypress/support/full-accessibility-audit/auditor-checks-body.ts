@@ -927,25 +927,23 @@ export const checkDynamicContrast = (
     const selector =
         'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
-    cy.get('body').then(($currentBody) => {
-        const $interactiveElements = $currentBody.find(selector)
+    cy.get(selector, { log: false }).then(($elements) => {
+        const $visibleElements = $elements.filter((_, el) => {
+            const $el = Cypress.$(el)
+            return !$el.is(':hidden') && $el.css('display') !== 'none'
+        })
 
-        if (!$interactiveElements.length) {
+        if (!$visibleElements.length) {
             return
         }
 
-        cy.get(selector).each(($el) => {
-            if ($el.is(':hidden') || $el.css('display') === 'none') {
-                return
-            }
+        cy.wrap($visibleElements).each(($el) => {
             const el = $el[0]
 
-            cy.wrap($el).trigger('mouseover', { force: true }).wait(30)
+            cy.wrap($el).trigger('mouseover', { force: true }).wait(50)
             cy.checkA11y(
                 el,
-                {
-                    runOnly: { type: 'rule', values: ['color-contrast'] },
-                },
+                { runOnly: { type: 'rule', values: ['color-contrast'] } },
                 (violations) => {
                     if (violations.length) {
                         const customViolations = violations.map((v) => {
@@ -976,12 +974,10 @@ export const checkDynamicContrast = (
             )
             cy.wrap($el).trigger('mouseout', { force: true })
 
-            cy.wrap($el).focus().wait(30)
+            cy.wrap($el).focus().wait(50)
             cy.checkA11y(
                 el,
-                {
-                    runOnly: { type: 'rule', values: ['color-contrast'] },
-                },
+                { runOnly: { type: 'rule', values: ['color-contrast'] } },
                 (violations) => {
                     if (violations.length) {
                         const customViolations = violations.map((v) => {
