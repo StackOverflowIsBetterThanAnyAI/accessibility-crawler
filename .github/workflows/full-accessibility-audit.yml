@@ -61,6 +61,7 @@ jobs:
       - name: Run Full Accessibility Audit via GHCR Image
         run: |
           mkdir -p audit
+          mkdir -p cypress/screenshots  # ← HINZUFÜGEN
 
           if [ -f "cypress/fixtures/${{ inputs.config_file }}" ]; then
             cp "cypress/fixtures/${{ inputs.config_file }}" audit/sitemap.json
