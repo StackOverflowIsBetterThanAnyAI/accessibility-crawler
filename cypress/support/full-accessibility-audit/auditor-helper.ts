@@ -85,6 +85,8 @@ export const processViolations = (
     violations.forEach((violation) => {
         const nodesCount = violation.nodes.length
 
+        cy.screenshot()
+
         Cypress.log({
             displayName: 'a11y error!',
             message: `${violation.id} on ${nodesCount} Node${nodesCount !== 1 ? 's' : ''}`,
