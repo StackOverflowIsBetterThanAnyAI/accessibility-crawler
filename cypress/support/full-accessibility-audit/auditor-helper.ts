@@ -85,7 +85,15 @@ export const processViolations = (
     violations.forEach((violation) => {
         const nodesCount = violation.nodes.length
 
-        cy.screenshot()
+        const shortTag =
+            violation.tags
+                .filter((tag: string) => /^wcag/i.test(tag))
+                .map((tag: string) => tag.toLowerCase())
+                .join('-') || 'no-wcag'
+        const cleanPath =
+            currentPath.replace(/^\/|\/$/g, '').replace(/\//g, '_') || 'root'
+        const screenshotName = `${cleanPath}--${shortTag}--${violation.id}`
+        cy.screenshot(screenshotName, { capture: 'viewport' })
 
         Cypress.log({
             displayName: 'a11y error!',
