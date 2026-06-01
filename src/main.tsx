@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, useState, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
     BrowserRouter,
@@ -216,37 +216,70 @@ const ProductDetail = () => {
 }
 
 function App() {
+    const [bgColor, setBgColor] = useState('blue')
+
+    useEffect(() => {
+        try {
+            const storedData = sessionStorage.getItem('local-vite-app')
+
+            if (storedData) {
+                const parsed = JSON.parse(storedData)
+
+                if (parsed && parsed.isdarkmode === true) {
+                    setBgColor('red')
+                    return
+                }
+            }
+            setBgColor('blue')
+        } catch (error) {
+            console.error('Fehler beim Parsen des sessionStorage:', error)
+            setBgColor('blue')
+        }
+    }, [])
+
     return (
         <BrowserRouter>
-            <nav
-                style={{
-                    padding: '20px',
-                    background: '#eee',
-                    display: 'flex',
-                    gap: '15px',
-                }}
-            >
-                <Link to="/">Home</Link>
-                <Link to="/four-oh-four">404</Link>
-                <Link to="/about/">About us</Link>
-                <Link to="/contact#form-anchor">Contact</Link>
-                <Link to="/shop">Shop</Link>
-                <a href="https://google.com" target="_blank" rel="noreferrer">
-                    External
-                </a>
-            </nav>
+            <div style={{ backgroundColor: bgColor }}>
+                <nav
+                    style={{
+                        padding: '20px',
+                        background: '#eee',
+                        display: 'flex',
+                        gap: '15px',
+                    }}
+                >
+                    <Link to="/">Home</Link>
+                    <Link to="/four-oh-four">404</Link>
+                    <Link to="/about/">About us</Link>
+                    <Link to="/contact#form-anchor">Contact</Link>
+                    <Link to="/shop">Shop</Link>
+                    <a
+                        href="https://google.com"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        External
+                    </a>
+                </nav>
 
-            <main style={{ padding: '20px' }}>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/about/secret" element={<Secret />} />
-                    <Route path="/about/secret/deep" element={<DeepSecret />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/shop" element={<Shop />} />
-                    <Route path="/shop/product" element={<ProductDetail />} />
-                </Routes>
-            </main>
+                <main style={{ padding: '20px' }}>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/about/secret" element={<Secret />} />
+                        <Route
+                            path="/about/secret/deep"
+                            element={<DeepSecret />}
+                        />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/shop" element={<Shop />} />
+                        <Route
+                            path="/shop/product"
+                            element={<ProductDetail />}
+                        />
+                    </Routes>
+                </main>
+            </div>
         </BrowserRouter>
     )
 }
