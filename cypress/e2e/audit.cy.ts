@@ -1,5 +1,4 @@
 import { runAxeAudit } from '../support/full-accessibility-audit/auditor'
-import { addLeadingSlash } from '../support/full-accessibility-audit/url-helper'
 
 describe('Accessibility Audit: Separated Crawler from Auditor', () => {
     const baseUrl = Cypress.config('baseUrl')
@@ -7,12 +6,12 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
         throw new Error('baseUrl is not defined. Please check your config.')
     }
 
-    let sitemap: { urls: string[] }
+    let sitemap: { urls: string[]; globalStorage?: any }
 
     try {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         sitemap = require('../fixtures/sitemap.json')
-        if (!sitemap.urls.length) {
+        if (!sitemap.urls || !sitemap.urls.length) {
             sitemap = { urls: [] }
         }
     } catch {
@@ -23,9 +22,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
 
     sitemap.urls.forEach((path) => {
         it(`Check: ${path}`, () => {
-            const url = baseUrl + addLeadingSlash(path)
-            cy.visit(url)
-            runAxeAudit(path, accessibilityErrors)
+            runAxeAudit(path, accessibilityErrors, sitemap.globalStorage)
         })
     })
 

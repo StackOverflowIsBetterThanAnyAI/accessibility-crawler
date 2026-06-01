@@ -1,31 +1,19 @@
 {
   "config": {
-    "only": [
-      " / "
-    ],
-    "included": [
-      " /test",
-      "*pattern/*"
-    ],
-    "excluded": [
-      "/about/*",
-      "/contact*",
-      "/test*",
-      "/"
-    ]
+    "only": [],
+    "included": [],
+    "excluded": []
   },
   "globalStorage": {
     "type": "sessionStorage",
     "data": {
       "local-vite-app": {
-        "theme": {
-          "isdarkmode": true
-        }
+        "isdarkmode": true
       }
     }
   },
   "urls": [
     "/"
   ],
-  "generatedAt": "2026-06-01T12:05:30.169Z"
+  "generatedAt": "2026-06-01T13:24:04.712Z"
 }

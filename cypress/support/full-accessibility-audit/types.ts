@@ -60,4 +60,4 @@ export type ViolationNodeType = {
     target: [string]
 }
 
-export type ViewportType = 'mobile' | 'desktop'
+export type ViewportType = 'Mobile' | 'Desktop'
