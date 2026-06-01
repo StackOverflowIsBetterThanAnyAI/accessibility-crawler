@@ -31,6 +31,12 @@ on:
         default: false
         description: "skip crawler and run audit directly"
 
+      config_file:
+        required: false
+        type: string
+        default: "sitemap.json"
+        description: "Name of the json config file in cypress/fixtures/"
+
 jobs:
   Full_Accessibility_Audit:
     name: Full Accessibility Audit
@@ -55,7 +61,12 @@ jobs:
       - name: Run Full Accessibility Audit via GHCR Image
         run: |
           mkdir -p audit
-          cp cypress/fixtures/sitemap.json audit/sitemap.json || echo '{"config": {"only": [], "included": [], "excluded": []}, "urls": []}' > audit/sitemap.json
+
+          if [ -f "cypress/fixtures/${{ inputs.config_file }}" ]; then
+            cp "cypress/fixtures/${{ inputs.config_file }}" audit/sitemap.json
+          else
+            echo '{"config": {"only": [], "included": [], "excluded": []}, "urls": [], "globalStorage": null}' > audit/sitemap.json
+          fi
 
           GATEWAY_IP=$(docker network inspect bridge -f '{{ (index .IPAM.Config 0).Gateway }}')
 
