@@ -37,6 +37,15 @@ export type ErrorListType = {
     message: string
     viewports: ViewportType[]
     uniqueKey: string
+    rawDetails?: {
+        tagString: string
+        impact: string
+        help: string
+        html: string
+        exactDomLocation: string
+        failureSummary: string
+        helpUrl: string
+    }
 }
 
 export type W3CActTestCaseType = {
@@ -68,4 +77,4 @@ export type ViolationNodeType = {
     element: HTMLElement
 }
 
-export type ViewportType = 'mobile' | 'desktop'
+export type ViewportType = 'Mobile' | 'Desktop'

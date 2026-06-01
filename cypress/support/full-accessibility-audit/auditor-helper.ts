@@ -3,7 +3,6 @@ import { formatWCAGTag } from './format-wcag-tag'
 import {
     CustomViolationReturnType,
     CustomViolationType,
-    ErrorListType,
     ViewportType,
     ViolationNodeType,
 } from './types'
@@ -65,8 +64,23 @@ const getUniqueSelector = (element: HTMLElement | null): string => {
 export const processViolations = (
     currentPath: string,
     violations: (CustomViolationReturnType | axe.Result)[],
-    errorList: ErrorListType[],
-    currentViewport: ViewportType
+    errorList: {
+        id: string
+        message: string
+        viewports: string[]
+        uniqueKey: string
+        rawDetails?: {
+            tagString: string
+            impact: string
+            help: string
+            html: string
+            exactDomLocation: string
+            failureSummary: string
+            helpUrl: string
+        }
+    }[],
+    currentViewport: ViewportType,
+    stateName: string = 'default state'
 ) => {
     violations.forEach((violation) => {
         const nodesCount = violation.nodes.length
@@ -92,12 +106,13 @@ export const processViolations = (
                 .map((tag: string) => formatWCAGTag(tag))
                 .join(', ') || 'no WCAG reference'
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         violation.nodes.forEach((node: any) => {
             let exactDomLocation = ''
 
             if (
                 Array.isArray(node.target) &&
-                node.target.length > 0 &&
+                node.target.length &&
                 !node.target[0].startsWith('<')
             ) {
                 exactDomLocation = node.target.join(' > ')
@@ -117,36 +132,67 @@ export const processViolations = (
                 exactDomLocation = getUniqueSelector(rawElement)
             }
 
+            const fullContext = `${currentViewport} (${stateName})`
             const uniqueKey = `${currentPath}-${violation.id}-${exactDomLocation}`
 
             const existingError = errorList.find(
                 (err) => err.uniqueKey === uniqueKey
             )
 
-            if (existingError) {
-                if (!existingError.viewports.includes(currentViewport)) {
-                    existingError.viewports.push(currentViewport)
+            const cleanSummary =
+                node.failureSummary?.replace(/\n\s(?!Fix)/g, '\n•') || ''
 
-                    existingError.message = existingError.message.replace(
-                        /Viewport: Only found on.*/,
-                        `Viewport: Found on mobile & desktop viewports.`
-                    )
+            if (existingError) {
+                if (!existingError.viewports.includes(fullContext)) {
+                    existingError.viewports.push(fullContext)
                 }
+
+                const details = existingError.rawDetails || {
+                    tagString,
+                    impact: violation.impact || 'unknown',
+                    help: violation.help,
+                    html: node.html,
+                    exactDomLocation,
+                    failureSummary: cleanSummary,
+                    helpUrl: violation.helpUrl || '',
+                }
+
+                const formattedViewports = existingError.viewports
+                    .map((vp) => `• ${vp}`)
+                    .join('\n')
+
+                existingError.message =
+                    `issue on [${currentPath}] - [${details.tagString} (${details.impact} severity)]:\n` +
+                    `${details.help}.\n\n` +
+                    `Element: ${details.html}\n\n` +
+                    `Exact DOM Position: ${details.exactDomLocation}\n\n` +
+                    `${details.failureSummary}\n\n` +
+                    `Found on following environments:\n${formattedViewports}\n\n` +
+                    `Help: ${details.helpUrl}`
             } else {
                 const formattedMessage =
                     `issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
                     `${violation.help}.\n\n` +
                     `Element: ${node.html}\n\n` +
                     `Exact DOM Position: ${exactDomLocation}\n\n` +
-                    `${node.failureSummary?.replace(/\n\s(?!Fix)/g, '\n•')}\n\n` +
-                    `Viewport: Only found on ${currentViewport} viewport.\n\n` +
+                    `${cleanSummary}\n\n` +
+                    `Found on following environments:\n• ${fullContext}\n\n` +
                     `Help: ${violation.helpUrl}`
 
                 errorList.push({
                     id: violation.id,
                     uniqueKey: uniqueKey,
                     message: formattedMessage,
-                    viewports: [currentViewport],
+                    viewports: [fullContext],
+                    rawDetails: {
+                        tagString,
+                        impact: violation.impact || 'unknown',
+                        help: violation.help,
+                        html: node.html,
+                        exactDomLocation,
+                        failureSummary: cleanSummary,
+                        helpUrl: violation.helpUrl || '',
+                    },
                 })
             }
         })
