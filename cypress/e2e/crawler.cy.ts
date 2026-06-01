@@ -20,6 +20,7 @@ describe('Crawler: Discovery Phase', () => {
         included: [] as string[],
         excluded: [] as string[],
     }
+    let globalStorageData: any = null
 
     const visitedUrls = new Set<string>()
     const auditUrls = new Set<string>()
@@ -50,8 +51,15 @@ describe('Crawler: Discovery Phase', () => {
         cy.task<boolean>('checkIfFileExists', sitemapPath).then((exists) => {
             if (exists) {
                 cy.readFile(sitemapPath).then((existingSitemap) => {
-                    if (existingSitemap && existingSitemap.config) {
-                        sitemapConfig = existingSitemap.config
+                    if (existingSitemap) {
+                        if (existingSitemap.config) {
+                            sitemapConfig = existingSitemap.config
+                        }
+
+                        if (existingSitemap.globalStorage) {
+                            globalStorageData = existingSitemap.globalStorage
+                        }
+
                         if (sitemapConfig.only.length) {
                             for (const item of sitemapConfig.only) {
                                 auditUrls.add(cleanUpExistingPattern(item))
@@ -75,6 +83,7 @@ describe('Crawler: Discovery Phase', () => {
                 if (!queue.length || sitemapConfig.only.length) {
                     cy.writeFile(sitemapPath, {
                         config: sitemapConfig,
+                        globalStorage: globalStorageData,
                         urls: Array.from(auditUrls),
                         generatedAt: new Date().toISOString(),
                     })
