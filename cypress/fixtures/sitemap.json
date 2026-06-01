@@ -1,19 +1,31 @@
 {
-    "config": {
-        "only": [" / "],
-        "included": [" /test", "*pattern/*"],
-        "excluded": ["/about/*", "/contact*", "/test*", "/"]
-    },
-    "urls": ["/"],
-    "generatedAt": "2026-05-16T16:55:02.889Z",
-    "globalStorage": {
-        "type": "sessionStorage",
-        "data": {
-            "local-vite-app": {
-                "theme": {
-                    "isdarkmode": true
-                }
-            }
+  "config": {
+    "only": [
+      " / "
+    ],
+    "included": [
+      " /test",
+      "*pattern/*"
+    ],
+    "excluded": [
+      "/about/*",
+      "/contact*",
+      "/test*",
+      "/"
+    ]
+  },
+  "globalStorage": {
+    "type": "sessionStorage",
+    "data": {
+      "local-vite-app": {
+        "theme": {
+          "isdarkmode": true
         }
+      }
     }
+  },
+  "urls": [
+    "/"
+  ],
+  "generatedAt": "2026-06-01T12:05:30.169Z"
 }
