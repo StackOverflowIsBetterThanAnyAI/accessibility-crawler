@@ -35,7 +35,7 @@ on:
         required: false
         type: string
         default: "sitemap.json"
-        description: "Name of the json config file in cypress/fixtures/"
+        description: "name of the json config file in ./cypress/fixtures/"
 
 jobs:
   Full_Accessibility_Audit:
