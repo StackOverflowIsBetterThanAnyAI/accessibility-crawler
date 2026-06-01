@@ -16,84 +16,88 @@ export const runAxeAudit = (currentPath: string, errorList: any[]) => {
         { name: 'desktop' as ViewportType, width: 1280, height: 720 },
     ]
 
-    for (const viewport of viewports) {
-        cy.viewport(viewport.width, viewport.height)
+    cy.wrap(viewports).each(
+        (viewport: { name: ViewportType; width: number; height: number }) => {
+            cy.viewport(viewport.width, viewport.height)
 
-        cy.checkA11y(
-            undefined,
-            {
-                runOnly: {
-                    type: 'tag',
-                    values: [
-                        'wcag2a',
-                        'wcag2aa',
-                        'wcag21a',
-                        'wcag21aa',
-                        'wcag22aa',
-                    ],
+            cy.wait(100)
+
+            cy.checkA11y(
+                undefined,
+                {
+                    runOnly: {
+                        type: 'tag',
+                        values: [
+                            'wcag2a',
+                            'wcag2aa',
+                            'wcag21a',
+                            'wcag21aa',
+                            'wcag22aa',
+                        ],
+                    },
+                    includedImpacts: ['critical', 'serious', 'moderate'],
                 },
-                includedImpacts: ['critical', 'serious', 'moderate'],
-            },
-            (violations: axe.Result[]) => {
-                processViolations(
-                    currentPath,
-                    violations,
-                    errorList,
-                    viewport.name
-                )
-            },
-            true
-        )
-
-        cy.get('body').then(($body) => {
-            Object.values(BodyChecks).forEach((checkFunction) => {
-                if (typeof checkFunction === 'function') {
-                    checkFunction(
-                        $body,
-                        (violations: CustomViolationReturnType[]) =>
-                            processViolations(
-                                currentPath,
-                                violations,
-                                errorList,
-                                viewport.name
-                            )
+                (violations: axe.Result[]) => {
+                    processViolations(
+                        currentPath,
+                        violations,
+                        errorList,
+                        viewport.name
                     )
-                }
-            })
-        })
+                },
+                true
+            )
 
-        cy.get('head').then(($head) => {
-            Object.values(HeadChecks).forEach((checkFunction) => {
-                if (typeof checkFunction === 'function') {
-                    checkFunction(
-                        $head,
-                        (violations: CustomViolationReturnType[]) =>
-                            processViolations(
-                                currentPath,
-                                violations,
-                                errorList,
-                                viewport.name
-                            )
-                    )
-                }
+            cy.get('body').then(($body) => {
+                Object.values(BodyChecks).forEach((checkFunction) => {
+                    if (typeof checkFunction === 'function') {
+                        checkFunction(
+                            $body,
+                            (violations: CustomViolationReturnType[]) =>
+                                processViolations(
+                                    currentPath,
+                                    violations,
+                                    errorList,
+                                    viewport.name
+                                )
+                        )
+                    }
+                })
             })
-        })
 
-        cy.get('html').then(($html) => {
-            Object.values(HtmlChecks).forEach((checkFunction) => {
-                if (typeof checkFunction === 'function') {
-                    checkFunction(
-                        $html,
-                        (violations: CustomViolationReturnType[]) =>
-                            processViolations(
-                                currentPath,
-                                violations,
-                                errorList,
-                                viewport.name
-                            )
-                    )
-                }
+            cy.get('head').then(($head) => {
+                Object.values(HeadChecks).forEach((checkFunction) => {
+                    if (typeof checkFunction === 'function') {
+                        checkFunction(
+                            $head,
+                            (violations: CustomViolationReturnType[]) =>
+                                processViolations(
+                                    currentPath,
+                                    violations,
+                                    errorList,
+                                    viewport.name
+                                )
+                        )
+                    }
+                })
             })
-        })
-    }
+
+            cy.get('html').then(($html) => {
+                Object.values(HtmlChecks).forEach((checkFunction) => {
+                    if (typeof checkFunction === 'function') {
+                        checkFunction(
+                            $html,
+                            (violations: CustomViolationReturnType[]) =>
+                                processViolations(
+                                    currentPath,
+                                    violations,
+                                    errorList,
+                                    viewport.name
+                                )
+                        )
+                    }
+                })
+            })
+        }
+    )
 }
