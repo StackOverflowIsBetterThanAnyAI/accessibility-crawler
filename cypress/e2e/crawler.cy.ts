@@ -20,6 +20,7 @@ describe('Crawler: Discovery Phase', () => {
         included: [] as string[],
         excluded: [] as string[],
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let globalStorageData: any = null
 
     const visitedUrls = new Set<string>()
@@ -37,13 +38,15 @@ describe('Crawler: Discovery Phase', () => {
         const normalized = removeTrailingSlash(path.trim())
 
         return !excluded.some((pattern) =>
-            convertToRegex(pattern).test(normalized)
+            convertToRegex(cleanUpExistingPattern(pattern)).test(normalized)
         )
     }
 
     const cleanUpExistingPattern = (pattern: string) => {
-        return removeTrailingSlash(
-            addLeadingSlash(pattern.replace(/^\*|\*$/g, '').trim())
+        return (
+            removeTrailingSlash(
+                addLeadingSlash(pattern.replace(/^\*|\*$/g, '').trim())
+            ) || '/'
         )
     }
 
@@ -51,36 +54,40 @@ describe('Crawler: Discovery Phase', () => {
         cy.task<boolean>('checkIfFileExists', sitemapPath).then((exists) => {
             if (exists) {
                 cy.readFile(sitemapPath).then((existingSitemap) => {
-                    if (existingSitemap) {
-                        if (existingSitemap.config) {
-                            sitemapConfig = existingSitemap.config
-                        }
-
-                        if (existingSitemap.globalStorage) {
-                            globalStorageData = existingSitemap.globalStorage
-                        }
-
-                        if (sitemapConfig.only.length) {
-                            for (const item of sitemapConfig.only) {
-                                auditUrls.add(cleanUpExistingPattern(item))
-                            }
-                        } else {
-                            for (const item of sitemapConfig.included) {
-                                if (isPathAllowedForAudit(item)) {
-                                    auditUrls.add(cleanUpExistingPattern(item))
-                                }
-                            }
-                        }
-                        cy.log('Existing config loaded.')
+                    if (existingSitemap && existingSitemap.config) {
+                        sitemapConfig = existingSitemap.config
+                        globalStorageData =
+                            existingSitemap.globalStorage || null
                     }
                 })
-            } else {
-                cy.log('No existing sitemap found. Generating empty config.')
             }
         })
+
         cy.then(() => {
+            if (sitemapConfig.only && sitemapConfig.only.length) {
+                const fixedUrls = sitemapConfig.only.map((item) =>
+                    cleanUpExistingPattern(item)
+                )
+
+                cy.writeFile(sitemapPath, {
+                    config: sitemapConfig,
+                    globalStorage: globalStorageData,
+                    urls: fixedUrls,
+                    generatedAt: new Date().toISOString(),
+                })
+                return
+            }
+            if (sitemapConfig.included && sitemapConfig.included.length) {
+                sitemapConfig.included.forEach((item) => {
+                    const normalizedInclude = cleanUpExistingPattern(item)
+                    if (isPathAllowedForAudit(normalizedInclude)) {
+                        auditUrls.add(normalizedInclude)
+                    }
+                })
+            }
+
             const processQueue = () => {
-                if (!queue.length || sitemapConfig.only.length) {
+                if (!queue.length) {
                     cy.writeFile(sitemapPath, {
                         config: sitemapConfig,
                         globalStorage: globalStorageData,
@@ -97,7 +104,7 @@ describe('Crawler: Discovery Phase', () => {
                 const normalizedPath = removeTrailingSlash(currentPath)
 
                 if (visitedUrls.has(normalizedPath)) {
-                    processQueue()
+                    cy.then(processQueue)
                     return
                 }
 
@@ -111,8 +118,10 @@ describe('Crawler: Discovery Phase', () => {
                     ? currentPath
                     : baseUrl + currentPath
 
-                cy.visit(fullUrl).then(() => {
-                    getInternalLinks(baseUrl).then((newLinks) => {
+                cy.visit(fullUrl)
+
+                getInternalLinks(baseUrl)
+                    .then((newLinks) => {
                         newLinks.forEach((link) => {
                             const [
                                 fullPathWithQuery,
@@ -127,10 +136,10 @@ describe('Crawler: Discovery Phase', () => {
                                 queue.push(fullPathWithQuery)
                             }
                         })
-
-                        processQueue()
                     })
-                })
+                    .then(() => {
+                        cy.then(processQueue)
+                    })
             }
             processQueue()
         })
