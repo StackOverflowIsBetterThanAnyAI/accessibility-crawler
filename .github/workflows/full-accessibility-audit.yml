@@ -86,14 +86,10 @@ jobs:
             ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest \
             sh -c "
               npx wait-on $BASE_URL --timeout 60000 && \
-              
-              ( $AUDIT_COMMAND ) || true
-              
-              echo 'Collecting Screenshots...'
-              find /app -name '*.png' -exec cp {} /app/cypress/fixtures/ \;
+              $AUDIT_COMMAND
             "
 
-      - name: Upload Audit (Reports & Screenshots)
+      - name: Upload Audit
         uses: actions/upload-artifact@v4
         if: always()
         with:
