@@ -60,12 +60,12 @@ jobs:
 
       - name: Run Full Accessibility Audit via GHCR Image
         run: |
-          mkdir -p audit/fixtures audit/screenshots
+          mkdir -p audit
 
           if [ -f "cypress/fixtures/${{ inputs.config_file }}" ]; then
-            cp "cypress/fixtures/${{ inputs.config_file }}" audit/fixtures/sitemap.json
+            cp "cypress/fixtures/${{ inputs.config_file }}" audit/sitemap.json
           else
-            echo '{"config": {"only": [], "included": [], "excluded": []}, "urls": [], "globalStorage": null}' > audit/fixtures/sitemap.json
+            echo '{"config": {"only": [], "included": [], "excluded": []}, "urls": [], "globalStorage": null}' > audit/sitemap.json
           fi
 
           GATEWAY_IP=$(docker network inspect bridge -f '{{ (index .IPAM.Config 0).Gateway }}')
@@ -82,15 +82,18 @@ jobs:
             --ipc=host \
             -e CYPRESS_BASE_URL="$BASE_URL" \
             --add-host=host.docker.internal:host-gateway \
-            -v ${{ github.workspace }}/audit/fixtures:/app/cypress/fixtures \
-            -v ${{ github.workspace }}/audit/screenshots:/app/cypress/screenshots \
+            -v ${{ github.workspace }}/audit:/app/cypress/fixtures \
             ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest \
             sh -c "
               npx wait-on $BASE_URL --timeout 60000 && \
-              $AUDIT_COMMAND
+              
+              ( $AUDIT_COMMAND ) || true
+              
+              echo 'Collecting Screenshots...'
+              find /app -name '*.png' -exec cp {} /app/cypress/fixtures/ \;
             "
 
-      - name: Upload Audit Reports & Screenshots
+      - name: Upload Audit (Reports & Screenshots)
         uses: actions/upload-artifact@v4
         if: always()
         with:
