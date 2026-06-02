@@ -2,6 +2,11 @@ import { franc } from 'franc'
 import { createCustomViolation } from './auditor-helper'
 import { CustomAuditCallback, CustomViolationReturnType } from './types'
 import { checkLanguageCompatibility } from './check-language-compatibility'
+import {
+    ARIA_ROLE_ALLOWED_ATTRIBUTES,
+    ARIA_ROLE_FORBIDDEN_ATTRIBUTES,
+    GLOBAL_ARIA_ATTRIBUTES,
+} from './wai-aria-roles'
 
 export const checkBadAltTextImage = (
     $body: JQuery<HTMLElement>,
@@ -662,72 +667,75 @@ export const checkProhibitedAria = (
     callback: CustomAuditCallback
 ) => {
     const violations: CustomViolationReturnType[] = []
-    const namingProhibitedRoles = [
-        'generic',
-        'paragraph',
-        'none',
-        'presentation',
-    ]
-    const prohibitedAttributes = [
-        'aria-label',
-        'aria-labelledby',
-        'aria-roledescription',
-        'aria-braillelabel',
-        'aria-brailleroledescription',
-    ]
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const aria = require('aria-api')
 
-    $body.find('*').each((_, el) => {
-        const $el = Cypress.$(el)
-        const presentProhibitedAttrs = prohibitedAttributes.filter((attr) =>
-            el.hasAttribute(attr)
-        )
+    $body
+        .find('*')
+        .filter((_, el) => {
+            return el
+                .getAttributeNames()
+                .some((name) => name.startsWith('aria-'))
+        })
+        .each((_, el) => {
+            const $el = Cypress.$(el)
 
-        if (!presentProhibitedAttrs.length) {
-            return
-        }
-
-        if (
-            $el.is(':hidden') ||
-            $el.attr('aria-hidden') === 'true' ||
-            $el.closest('[hidden]').length
-        ) {
-            return
-        }
-
-        const tagName = el.tagName.toLowerCase()
-        const explicitRole = $el.attr('role')?.trim().toLowerCase()
-
-        let effectiveRole = explicitRole
-        if (!effectiveRole) {
-            if (tagName === 'div' || tagName === 'span') {
-                effectiveRole = 'generic'
-            } else if (tagName === 'p') {
-                effectiveRole = 'paragraph'
+            if (
+                $el.is(':hidden') ||
+                $el.attr('aria-hidden') === 'true' ||
+                $el.closest('[hidden]').length
+            ) {
+                return
             }
-        }
 
-        if (effectiveRole && namingProhibitedRoles.includes(effectiveRole)) {
-            presentProhibitedAttrs.forEach((attr) => {
-                violations.push(
-                    createCustomViolation({
-                        id: 'prohibited-aria-naming',
-                        impact: 'serious',
-                        description: `The attribute "${attr}" is prohibited on a "${effectiveRole}" element`,
-                        help: `Elements with role "${effectiveRole}" (like plain divs or paragraphs) cannot be given an accessible name`,
-                        helpUrl:
-                            'https://www.w3.org/WAI/standards-guidelines/act/rules/kb1m8s/proposed/',
-                        html: el.outerHTML,
-                        failureSummary: [
-                            `Element <${tagName}> is acting as role "${effectiveRole}".`,
-                            `The attribute "${attr}" is not allowed here because this role is purely structural and cannot be named.`,
-                        ],
-                        tags: ['wcag2a', 'wcag131'],
-                        element: el,
-                    })
-                )
+            const ariaAttributesOnElement = el
+                .getAttributeNames()
+                .filter((name) => name.startsWith('aria-'))
+
+            const computedRole = aria.getRole(el) || 'generic'
+
+            ariaAttributesOnElement.forEach((attr) => {
+                if (GLOBAL_ARIA_ATTRIBUTES.includes(attr)) {
+                    return
+                }
+
+                const forbiddenRolesForAttr =
+                    ARIA_ROLE_FORBIDDEN_ATTRIBUTES[attr] || []
+                const isExplicitlyForbidden =
+                    forbiddenRolesForAttr.includes(computedRole)
+
+                const allowedRolesForAttr =
+                    ARIA_ROLE_ALLOWED_ATTRIBUTES[attr] || []
+
+                const isNotAllowed = ARIA_ROLE_ALLOWED_ATTRIBUTES[attr]
+                    ? !allowedRolesForAttr.includes(computedRole)
+                    : true
+
+                if (isExplicitlyForbidden || isNotAllowed) {
+                    const failureReason = isExplicitlyForbidden
+                        ? `The attribute "${attr}" is explicitly prohibited on elements with role "${computedRole}".`
+                        : `The attribute "${attr}" is not supported by elements with role "${computedRole}".`
+
+                    violations.push(
+                        createCustomViolation({
+                            id: 'prohibited-aria-attribute',
+                            impact: 'serious',
+                            description: `The attribute "${attr}" is not permitted on a "${computedRole}" element`,
+                            help: `"${attr}" can only be used on roles that support it and where it is not prohibited according to WAI-ARIA specs`,
+                            helpUrl:
+                                'https://www.w3.org/WAI/standards-guidelines/act/rules/5c01ea/proposed/',
+                            html: el.outerHTML.substring(0, 64) + '...',
+                            failureSummary: [
+                                `Element <${el.tagName.toLowerCase()}> has the computed ARIA role "${computedRole}".`,
+                                `${failureReason}`,
+                            ],
+                            tags: ['wcag2a', 'wcag131'],
+                            element: el,
+                        })
+                    )
+                }
             })
-        }
-    })
+        })
 
     if (violations.length) {
         callback(violations)
