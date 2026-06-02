@@ -2,6 +2,11 @@ import { franc } from 'franc'
 import { createCustomViolation } from './auditor-helper'
 import { CustomAuditCallback, CustomViolationReturnType } from './types'
 import { checkLanguageCompatibility } from './check-language-compatibility'
+import {
+    ARIA_ROLE_ALLOWED_ATTRIBUTES,
+    ARIA_ROLE_FORBIDDEN_ATTRIBUTES,
+    GLOBAL_ARIA_ATTRIBUTES,
+} from './wai-aria-roles'
 
 export const checkBadAltTextImage = (
     $body: JQuery<HTMLElement>,
@@ -9,7 +14,7 @@ export const checkBadAltTextImage = (
 ) => {
     const badAltPatterns = [
         /\.(jpg|jpeg|png|gif|tiff|raw|svg|webp|avif)$/i,
-        /(graphic|picture|image|photo|icon)/i,
+        /(graphic|picture|image|photo|icon|logo)/i,
         /(grafik|abbildung|bild|foto|symbol)/i,
         /placeholder/i,
         /platzhalter/i,
@@ -61,8 +66,10 @@ export const checkAltTextInputImage = (
 ) => {
     const badAltPatterns = [
         /\.(jpg|jpeg|png|gif|tiff|raw|svg|webp|avif)$/i,
-        /(graphic|picture|image|photo|icon)/i,
+        /(graphic|picture|image|photo|icon|logo)/i,
+        /(grafik|abbildung|bild|foto|symbol)/i,
         /placeholder/i,
+        /platzhalter/i,
         /^[0-9]+$/,
         /^[^a-z0-9]+$/i,
         /^.{1}$/,
@@ -145,6 +152,46 @@ export const checkAltTextInputImage = (
     }
 }
 
+export const checkBadFormLabels = (
+    $body: JQuery<HTMLElement>,
+    callback: CustomAuditCallback
+) => {
+    const badLabelPattern = /^[^\p{L}0-9]+$/iu
+    const violations: CustomViolationReturnType[] = []
+
+    $body.find('label').each((_, label) => {
+        const labelText = Cypress.$(label).text()?.trim() || ''
+
+        const isNoneOrBadLabelText =
+            labelText.length <= 1 || badLabelPattern.test(labelText)
+
+        if (isNoneOrBadLabelText) {
+            violations.push(
+                createCustomViolation({
+                    id: 'bad-form-label',
+                    impact: 'serious',
+                    description: `The label "${labelText}" is uninformative`,
+                    help: 'Form labels must clearly describe the purpose of the input field and cannot be empty or consist only of non-alphanumeric characters',
+                    helpUrl:
+                        'https://www.w3.org/WAI/WCAG22/Understanding/headings-and-labels.html',
+                    html: label.outerHTML,
+                    failureSummary: [
+                        'Provide a meaningful, visible text within the label.',
+                        'Do not use only special characters or symbols.',
+                        'Do not use only one single character.',
+                    ],
+                    tags: ['wcag2aa', 'wcag246'],
+                    element: label,
+                })
+            )
+        }
+    })
+
+    if (violations.length) {
+        callback(violations)
+    }
+}
+
 export const checkListStructure = (
     $body: JQuery<HTMLElement>,
     callback: CustomAuditCallback
@@ -180,7 +227,7 @@ export const checkListStructure = (
                         impact: 'serious',
                         description:
                             'List element contains invalid child elements',
-                        help: 'Elements with a list role must only contain listitem elements.',
+                        help: 'Elements with a list role must only contain listitem elements',
                         helpUrl:
                             'https://www.w3.org/WAI/WCAG22/Techniques/html/H48',
                         html: list.outerHTML,
@@ -248,7 +295,11 @@ export const checkFieldsetLegend = (
         const firstChild = $fieldset.children().first()
 
         const hasMultipleLegends = legend.length > 1
-        const hasValidLegend = legend.length && legend.text().trim().length
+
+        const legendText = legend.text().trim()
+        const hasValidLegend =
+            legend.length && legendText.length && /\p{L}/u.test(legendText)
+
         const isLegendFirst = firstChild.is('legend')
 
         if (!hasValidLegend || !isLegendFirst || hasMultipleLegends) {
@@ -265,7 +316,7 @@ export const checkFieldsetLegend = (
                     failureSummary: [
                         'Add a <legend> element with a meaningful text inside the <fieldset>.',
                         'The <legend> element must be the first child of the <fieldset>.',
-                        'Only use one <legend> element per <fieldset>.',
+                        'Use only one <legend> element per <fieldset>.',
                     ],
                     tags: ['wcag2a', 'wcag131'],
                     element: fieldset,
@@ -474,9 +525,9 @@ export const checkConflictDecorativeRole = (
         const tabIndex = $el.attr('tabindex')
 
         const isFocusable = tabIndex !== undefined && parseInt(tabIndex) >= 0
-        const hasAriaName = !!ariaLabel || !!ariaLabelledBy || !!title
+        const hasAccessibleName = !!ariaLabel || !!ariaLabelledBy || !!title
 
-        if (isFocusable || hasAriaName) {
+        if (isFocusable || hasAccessibleName) {
             violations.push(
                 createCustomViolation({
                     id: 'conflict-decorative-role',
@@ -488,7 +539,7 @@ export const checkConflictDecorativeRole = (
                         'https://www.w3.org/WAI/standards-guidelines/act/rules/46ca7f/proposed/',
                     html: el.outerHTML,
                     failureSummary: [
-                        'Remove the aria-label/-labelledby, title or non-empty alt attribute if the element is purely decorative.',
+                        'Remove the aria-label or aria-labelledby attribute, title, or custom tabindex if the element is purely decorative.',
                         'Or remove the role="presentation"/"none" if the element is actually important.',
                     ],
                     tags: ['wcag2a', 'wcag111'],
@@ -519,8 +570,8 @@ export const checkConflictDecorativeRole = (
                         'https://www.w3.org/WAI/standards-guidelines/act/rules/46ca7f/proposed/',
                     html: el.outerHTML,
                     failureSummary: [
-                        'Remove the non-empty alt attribute if the element is actually important.',
-                        'Or remove the role="presentation"/"none" if the element is purely decorative.',
+                        'Remove aria-label or aria-labelledby if the image is purely decorative.',
+                        'Or replace alt="" with a meaningful alt text if the image conveys information.',
                     ],
                     tags: ['wcag2a', 'wcag111'],
                     element: el,
@@ -616,72 +667,74 @@ export const checkProhibitedAria = (
     callback: CustomAuditCallback
 ) => {
     const violations: CustomViolationReturnType[] = []
-    const namingProhibitedRoles = [
-        'generic',
-        'paragraph',
-        'none',
-        'presentation',
-    ]
-    const prohibitedAttributes = [
-        'aria-label',
-        'aria-labelledby',
-        'aria-roledescription',
-        'aria-braillelabel',
-        'aria-brailleroledescription',
-    ]
+    const aria = require('aria-api')
 
-    $body.find('*').each((_, el) => {
-        const $el = Cypress.$(el)
-        const presentProhibitedAttrs = prohibitedAttributes.filter((attr) =>
-            el.hasAttribute(attr)
-        )
+    $body
+        .find('*')
+        .filter((_, el) => {
+            return el
+                .getAttributeNames()
+                .some((name) => name.startsWith('aria-'))
+        })
+        .each((_, el) => {
+            const $el = Cypress.$(el)
 
-        if (!presentProhibitedAttrs.length) {
-            return
-        }
-
-        if (
-            $el.is(':hidden') ||
-            $el.attr('aria-hidden') === 'true' ||
-            $el.closest('[hidden]').length
-        ) {
-            return
-        }
-
-        const tagName = el.tagName.toLowerCase()
-        const explicitRole = $el.attr('role')?.trim().toLowerCase()
-
-        let effectiveRole = explicitRole
-        if (!effectiveRole) {
-            if (tagName === 'div' || tagName === 'span') {
-                effectiveRole = 'generic'
-            } else if (tagName === 'p') {
-                effectiveRole = 'paragraph'
+            if (
+                $el.is(':hidden') ||
+                $el.attr('aria-hidden') === 'true' ||
+                $el.closest('[hidden]').length
+            ) {
+                return
             }
-        }
 
-        if (effectiveRole && namingProhibitedRoles.includes(effectiveRole)) {
-            presentProhibitedAttrs.forEach((attr) => {
-                violations.push(
-                    createCustomViolation({
-                        id: 'prohibited-aria-naming',
-                        impact: 'serious',
-                        description: `The attribute "${attr}" is prohibited on a "${effectiveRole}" element`,
-                        help: `Elements with role "${effectiveRole}" (like plain divs or paragraphs) cannot be given an accessible name`,
-                        helpUrl:
-                            'https://www.w3.org/WAI/standards-guidelines/act/rules/kb1m8s/proposed/',
-                        html: el.outerHTML,
-                        failureSummary: [
-                            `Element <${tagName}> is acting as role "${effectiveRole}".`,
-                            `The attribute "${attr}" is not allowed here because this role is purely structural and cannot be named.`,
-                        ],
-                        tags: ['wcag2a', 'wcag131'],
-                        element: el,
-                    })
-                )
+            const ariaAttributesOnElement = el
+                .getAttributeNames()
+                .filter((name) => name.startsWith('aria-'))
+
+            const computedRole = aria.getRole(el) || 'generic'
+
+            ariaAttributesOnElement.forEach((attr) => {
+                if (GLOBAL_ARIA_ATTRIBUTES.includes(attr)) {
+                    return
+                }
+
+                const forbiddenRolesForAttr =
+                    ARIA_ROLE_FORBIDDEN_ATTRIBUTES[attr] || []
+                const isExplicitlyForbidden =
+                    forbiddenRolesForAttr.includes(computedRole)
+
+                const allowedRolesForAttr =
+                    ARIA_ROLE_ALLOWED_ATTRIBUTES[attr] || []
+
+                const isNotAllowed = ARIA_ROLE_ALLOWED_ATTRIBUTES[attr]
+                    ? !allowedRolesForAttr.includes(computedRole)
+                    : true
+
+                if (isExplicitlyForbidden || isNotAllowed) {
+                    const failureReason = isExplicitlyForbidden
+                        ? `The attribute "${attr}" is explicitly prohibited on elements with role "${computedRole}".`
+                        : `The attribute "${attr}" is not supported by elements with role "${computedRole}".`
+
+                    violations.push(
+                        createCustomViolation({
+                            id: 'prohibited-aria-attribute',
+                            impact: 'serious',
+                            description: `The attribute "${attr}" is not permitted on a "${computedRole}" element`,
+                            help: `"${attr}" can only be used on roles that support it and where it is not prohibited according to WAI-ARIA specs`,
+                            helpUrl:
+                                'https://www.w3.org/WAI/standards-guidelines/act/rules/5c01ea/proposed/',
+                            html: el.outerHTML.substring(0, 64) + '...',
+                            failureSummary: [
+                                `Element <${el.tagName.toLowerCase()}> has the computed ARIA role "${computedRole}".`,
+                                `${failureReason}`,
+                            ],
+                            tags: ['wcag2a', 'wcag412'],
+                            element: el,
+                        })
+                    )
+                }
             })
-        }
-    })
+        })
 
     if (violations.length) {
         callback(violations)
@@ -872,4 +925,100 @@ export const checkLabelInNameStrict = (
     if (violations.length) {
         callback(violations)
     }
+}
+
+export const checkDynamicContrast = (
+    _$body: JQuery<HTMLElement>,
+    callback: CustomAuditCallback
+) => {
+    const selector =
+        'a[href]:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex^="-"]):not([disabled])'
+
+    cy.get('body', { log: false }).then(($body) => {
+        const $elements = $body.find(selector)
+
+        const $visibleElements = $elements.filter((_, el) => {
+            const $el = Cypress.$(el)
+            if ($el.is(':hidden') || $el.css('display') === 'none') {
+                return false
+            }
+            return true
+        })
+
+        if (!$visibleElements.length) {
+            return
+        }
+
+        cy.wrap($visibleElements, { log: false }).each(($el) => {
+            const el = $el[0]
+
+            cy.wrap($el).trigger('mouseover', { force: true, log: false })
+            cy.checkA11y(
+                el,
+                { runOnly: { type: 'rule', values: ['color-contrast'] } },
+                (violations) => {
+                    if (violations.length) {
+                        const customViolations = violations.map((v) => {
+                            const axeSummary =
+                                v.nodes[0]?.failureSummary ||
+                                'Element does not have sufficient color contrast.'
+                            return createCustomViolation({
+                                id: 'contrast-hover-state',
+                                impact: 'serious',
+                                description:
+                                    'Elements must maintain sufficient contrast ratio in hover state',
+                                help: 'Elements must maintain sufficient contrast ratio when hovered',
+                                helpUrl:
+                                    'https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html',
+                                html: el.outerHTML,
+                                failureSummary: [
+                                    axeSummary,
+                                    'Increase the color contrast of text and interactive elements to at least 4.5:1 for normal text and 3:1 for large text when hovered.',
+                                ],
+                                tags: ['wcag2aa', 'wcag143'],
+                                element: el,
+                            })
+                        })
+                        callback(customViolations)
+                    }
+                },
+                true
+            )
+            cy.wrap($el).trigger('mouseout', { force: true, log: false })
+
+            cy.wrap($el).focus({ log: false })
+            cy.checkA11y(
+                el,
+                { runOnly: { type: 'rule', values: ['color-contrast'] } },
+                (violations) => {
+                    if (violations.length) {
+                        const customViolations = violations.map((v) => {
+                            const axeSummary =
+                                v.nodes[0]?.failureSummary ||
+                                'Element does not have sufficient color contrast.'
+                            return createCustomViolation({
+                                id: 'contrast-focus-state',
+                                impact: 'serious',
+                                description:
+                                    'Elements must maintain sufficient contrast ratio in focus state',
+                                help: 'Elements must maintain sufficient contrast ratio when focused via keyboard',
+                                helpUrl:
+                                    'https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html',
+                                html: el.outerHTML,
+                                failureSummary: [
+                                    axeSummary,
+                                    'Increase the color contrast of text and interactive elements to at least 4.5:1 for normal text and 3:1 for large text when focused.',
+                                ],
+                                tags: ['wcag2aa', 'wcag143'],
+                                element: el,
+                            })
+                        })
+                        callback(customViolations)
+                    }
+                },
+                true
+            )
+            cy.wrap($el).blur({ force: true, log: false })
+        })
+    })
 }

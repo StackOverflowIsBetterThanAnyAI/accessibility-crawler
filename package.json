@@ -12,6 +12,7 @@
     "dependencies": {
         "@siteimprove/alfa-cypress": "^0.82.1",
         "@siteimprove/alfa-test-utils": "^0.82.1",
+        "aria-api": "^0.9.1",
         "franc": "^6.2.0",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",

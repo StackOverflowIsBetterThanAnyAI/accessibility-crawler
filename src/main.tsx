@@ -239,7 +239,11 @@ function App() {
 
     return (
         <BrowserRouter>
-            <div style={{ backgroundColor: bgColor }}>
+            <div
+                style={{ backgroundColor: bgColor }}
+                aria-autocomplete="list"
+                role="combobox"
+            >
                 <nav
                     style={{
                         padding: '20px',
