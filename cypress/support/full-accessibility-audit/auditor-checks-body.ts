@@ -3,8 +3,8 @@ import { createCustomViolation } from './auditor-helper'
 import { CustomAuditCallback, CustomViolationReturnType } from './types'
 import { checkLanguageCompatibility } from './check-language-compatibility'
 import {
+    ARIA_LABEL_FORBIDDEN_ROLES,
     ARIA_ROLE_ALLOWED_ATTRIBUTES,
-    ARIA_ROLE_FORBIDDEN_ATTRIBUTES,
     GLOBAL_ARIA_ATTRIBUTES,
 } from './wai-aria-roles'
 
@@ -695,44 +695,55 @@ export const checkProhibitedAria = (
             const computedRole = aria.getRole(el) || 'generic'
 
             ariaAttributesOnElement.forEach((attr) => {
+                if (attr === 'aria-label' || attr === 'aria-labelledby') {
+                    if (ARIA_LABEL_FORBIDDEN_ROLES.includes(computedRole)) {
+                        violations.push(
+                            createCustomViolation({
+                                id: 'prohibited-aria-naming',
+                                impact: 'serious',
+                                description: `The attribute "${attr}" is prohibited on a "${computedRole}" element`,
+                                help: `Elements with role "${computedRole}" are purely structural and cannot be given an accessible name`,
+                                helpUrl:
+                                    'https://www.w3.org/WAI/standards-guidelines/act/rules/kb1m8s/proposed/',
+                                html: el.outerHTML.substring(0, 64) + '...',
+                                failureSummary: [
+                                    `Element <${el.tagName.toLowerCase()}> has the computed ARIA role "${computedRole}".`,
+                                    `The attribute "${attr}" is explicitly prohibited here because this role cannot be meaningfully announced with an accessible name.`,
+                                ],
+                                tags: ['wcag2a', 'wcag131'],
+                                element: el,
+                            })
+                        )
+                    }
+                    return
+                }
+
                 if (GLOBAL_ARIA_ATTRIBUTES.includes(attr)) {
                     return
                 }
 
-                const forbiddenRolesForAttr =
-                    ARIA_ROLE_FORBIDDEN_ATTRIBUTES[attr] || []
-                const isExplicitlyForbidden =
-                    forbiddenRolesForAttr.includes(computedRole)
+                const allowedRolesForAttr = ARIA_ROLE_ALLOWED_ATTRIBUTES[attr]
 
-                const allowedRolesForAttr =
-                    ARIA_ROLE_ALLOWED_ATTRIBUTES[attr] || []
-
-                const isNotAllowed = ARIA_ROLE_ALLOWED_ATTRIBUTES[attr]
-                    ? !allowedRolesForAttr.includes(computedRole)
-                    : true
-
-                if (isExplicitlyForbidden || isNotAllowed) {
-                    const failureReason = isExplicitlyForbidden
-                        ? `The attribute "${attr}" is explicitly prohibited on elements with role "${computedRole}".`
-                        : `The attribute "${attr}" is not supported by elements with role "${computedRole}".`
-
-                    violations.push(
-                        createCustomViolation({
-                            id: 'prohibited-aria-attribute',
-                            impact: 'serious',
-                            description: `The attribute "${attr}" is not permitted on a "${computedRole}" element`,
-                            help: `"${attr}" can only be used on roles that support it and where it is not prohibited according to WAI-ARIA specs`,
-                            helpUrl:
-                                'https://www.w3.org/WAI/standards-guidelines/act/rules/5c01ea/proposed/',
-                            html: el.outerHTML.substring(0, 64) + '...',
-                            failureSummary: [
-                                `Element <${el.tagName.toLowerCase()}> has the computed ARIA role "${computedRole}".`,
-                                `${failureReason}`,
-                            ],
-                            tags: ['wcag2a', 'wcag131'],
-                            element: el,
-                        })
-                    )
+                if (allowedRolesForAttr) {
+                    if (!allowedRolesForAttr.includes(computedRole)) {
+                        violations.push(
+                            createCustomViolation({
+                                id: 'prohibited-aria-attribute',
+                                impact: 'serious',
+                                description: `The attribute "${attr}" is not permitted on a "${computedRole}" element`,
+                                help: `"${attr}" can only be used on roles that support it according to WAI-ARIA specs`,
+                                helpUrl:
+                                    'https://www.w3.org/TR/wai-aria-1.2/#state_prop_def',
+                                html: el.outerHTML.substring(0, 64) + '...',
+                                failureSummary: [
+                                    `Element <${el.tagName.toLowerCase()}> has the computed ARIA role "${computedRole}".`,
+                                    `The attribute "${attr}" is not supported by elements with role "${computedRole}".`,
+                                ],
+                                tags: ['wcag2a', 'wcag131'],
+                                element: el,
+                            })
+                        )
+                    }
                 }
             })
         })

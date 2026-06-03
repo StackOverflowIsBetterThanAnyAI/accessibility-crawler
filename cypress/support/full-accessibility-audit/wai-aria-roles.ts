@@ -285,31 +285,16 @@ export const ARIA_ROLE_ALLOWED_ATTRIBUTES: Record<string, string[]> = {
     ],
 }
 
-export const ARIA_ROLE_FORBIDDEN_ATTRIBUTES: Record<string, string[]> = {
-    'aria-label': [
-        'caption',
-        'code',
-        'deletion',
-        'emphasis',
-        'generic',
-        'insertion',
-        'paragraph',
-        'presentation',
-        'strong',
-        'subscript',
-        'superscript',
-    ],
-    'aria-labelledby': [
-        'caption',
-        'code',
-        'deletion',
-        'emphasis',
-        'generic',
-        'insertion',
-        'paragraph',
-        'presentation',
-        'strong',
-        'subscript',
-        'superscript',
-    ],
-}
+export const ARIA_LABEL_FORBIDDEN_ROLES: string[] = [
+    'caption',
+    'code',
+    'deletion',
+    'emphasis',
+    'generic',
+    'insertion',
+    'paragraph',
+    'presentation',
+    'strong',
+    'subscript',
+    'superscript',
+]
