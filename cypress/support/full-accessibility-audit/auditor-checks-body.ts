@@ -213,6 +213,18 @@ export const checkBadLinkTexts = (
         /^continue reading$/i,
         /^read more$/i,
         /^button$/i,
+        /^klick/i,
+        /hier$/i,
+        /hier\.{3}$/i,
+        /mehr\.{3}$/i,
+        /mehr\.{3}$/i,
+        /^mehr erfahren$/i,
+        /^mehr erfahren\.{3}$/i,
+        /^erfahre mehr$/i,
+        /^erfahre mehr\.{3}$/i,
+        /^weiter$/i,
+        /^weiterlesen$/i,
+        /^mehr lesen$/i,
     ]
 
     $body.find('a, button, [role="link"], [role="button"]').each((_, el) => {
