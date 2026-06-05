@@ -73,6 +73,12 @@ export const checkAltTextInputImage = (
         /^[0-9]+$/,
         /^[^a-z0-9]+$/i,
         /^.{1}$/,
+        /^click/i,
+        /here$/i,
+        /here\.{3}$/i,
+        /^klick/i,
+        /hier$/i,
+        /hier\.{3}$/i,
     ]
     const violations: CustomViolationReturnType[] = []
 
