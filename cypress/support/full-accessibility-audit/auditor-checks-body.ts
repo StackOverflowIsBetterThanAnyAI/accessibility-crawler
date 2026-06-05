@@ -1056,7 +1056,8 @@ export const checkInvalidAnchorElements = (
             return
         }
 
-        if (el.hasAttribute('href')) {
+        const href = $el.attr('href')
+        if (href !== undefined && href.trim().length) {
             return
         }
 
