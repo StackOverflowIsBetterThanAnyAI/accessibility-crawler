@@ -705,7 +705,9 @@ export const checkProhibitedAria = (
                                 help: `Elements with role "${computedRole}" are purely structural and cannot be given an accessible name`,
                                 helpUrl:
                                     'https://www.w3.org/WAI/standards-guidelines/act/rules/kb1m8s/proposed/',
-                                html: el.outerHTML.substring(0, 64) + '...',
+                                html:
+                                    el.outerHTML.substring(0, 64) +
+                                    (el.outerHTML.length > 64 ? '...' : ''),
                                 failureSummary: [
                                     `Element <${el.tagName.toLowerCase()}> has the computed ARIA role "${computedRole}".`,
                                     `The attribute "${attr}" is explicitly prohibited here because this role cannot be meaningfully announced with an accessible name.`,
@@ -734,7 +736,9 @@ export const checkProhibitedAria = (
                                 help: `"${attr}" can only be used on roles that support it according to WAI-ARIA specs`,
                                 helpUrl:
                                     'https://www.w3.org/TR/wai-aria-1.2/#state_prop_def',
-                                html: el.outerHTML.substring(0, 64) + '...',
+                                html:
+                                    el.outerHTML.substring(0, 64) +
+                                    (el.outerHTML.length > 64 ? '...' : ''),
                                 failureSummary: [
                                     `Element <${el.tagName.toLowerCase()}> has the computed ARIA role "${computedRole}".`,
                                     `The attribute "${attr}" is not supported by elements with role "${computedRole}".`,
@@ -1033,4 +1037,60 @@ export const checkDynamicContrast = (
             cy.wrap($el).blur({ force: true, log: false })
         })
     })
+}
+
+export const checkInvalidAnchorElements = (
+    $body: JQuery<HTMLElement>,
+    callback: CustomAuditCallback
+) => {
+    const violations: CustomViolationReturnType[] = []
+
+    $body.find('a').each((_, el) => {
+        const $el = Cypress.$(el)
+
+        if (
+            $el.is(':hidden') ||
+            $el.attr('aria-hidden') === 'true' ||
+            $el.closest('[hidden]').length
+        ) {
+            return
+        }
+
+        if (el.hasAttribute('href')) {
+            return
+        }
+
+        const tabindexAttr = $el.attr('tabindex')
+        const tabindex =
+            tabindexAttr !== undefined ? parseInt(tabindexAttr, 10) : NaN
+
+        if (!isNaN(tabindex) && tabindex >= 0) {
+            return
+        }
+
+        violations.push(
+            createCustomViolation({
+                id: 'invalid-anchor-element',
+                impact: 'serious',
+                description:
+                    '<a>> elements must have a valid "href" attribute or a keyboard-accessible "tabindex"',
+                help: 'Missing "href" attributes remove the element from the keyboard focus flow and strip its semantic role',
+                helpUrl:
+                    'https://www.w3.org/WAI/WCAG22/Understanding/keyboard.html',
+                html:
+                    el.outerHTML.substring(0, 64) +
+                    (el.outerHTML.length > 64 ? '...' : ''),
+                failureSummary: [
+                    `The element <${el.tagName.toLowerCase()}> acts as a placeholder link because it lacks an "href" attribute.`,
+                    'Without "href" or an explicit "tabindex", this element is completely inaccessible to keyboard users.',
+                ],
+                tags: ['wcag2a', 'wcag211'],
+                element: el,
+            })
+        )
+    })
+
+    if (violations.length) {
+        callback(violations)
+    }
 }
