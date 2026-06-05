@@ -192,6 +192,95 @@ export const checkBadFormLabels = (
     }
 }
 
+export const checkBadLinkTexts = (
+    $body: JQuery<HTMLElement>,
+    callback: CustomAuditCallback
+) => {
+    const violations: CustomViolationReturnType[] = []
+
+    const badLinkTextPatterns = [
+        /^click/i,
+        /here$/i,
+        /here\.{3}$/i,
+        /^more$/i,
+        /^more\.{3}$/i,
+        /^learn more$/i,
+        /^learn more\.{3}$/i,
+        /^details$/i,
+        /^more details$/i,
+        /^link$/i,
+        /^continue$/i,
+        /^continue reading$/i,
+        /^read more$/i,
+        /^button$/i,
+    ]
+
+    $body.find('a, button, [role="link"], [role="button"]').each((_, el) => {
+        const $el = Cypress.$(el)
+
+        if (
+            $el.is(':hidden') ||
+            $el.attr('aria-hidden') === 'true' ||
+            $el.closest('[hidden]').length
+        ) {
+            return
+        }
+
+        let accessibleName = ''
+
+        const ariaLabel = $el.attr('aria-label')
+
+        if (ariaLabel && ariaLabel.trim().length) {
+            accessibleName = ariaLabel.trim()
+        } else {
+            const imgAltTexts: string[] = []
+            $el.find('img[alt]').each((_, img) => {
+                const alt = Cypress.$(img).attr('alt')?.trim()
+                if (alt) {
+                    imgAltTexts.push(alt)
+                }
+            })
+
+            const elementText = $el.text().trim()
+            accessibleName = elementText || imgAltTexts.join(' ')
+        }
+
+        if (!accessibleName) {
+            return
+        }
+
+        const matchesBadLinkText = badLinkTextPatterns.some((regex) =>
+            regex.test(accessibleName)
+        )
+
+        if (matchesBadLinkText) {
+            violations.push(
+                createCustomViolation({
+                    id: 'bad-link-text',
+                    impact: 'moderate',
+                    description: `The link or button text "${accessibleName}" is generic and lacks context`,
+                    help: 'Ensure that link and button texts clearly describe the destination or action without relying on surrounding context',
+                    helpUrl:
+                        'https://www.w3.org/WAI/WCAG21/Understanding/link-purpose-in-context',
+                    html:
+                        el.outerHTML.substring(0, 64) +
+                        (el.outerHTML.length > 64 ? '...' : ''),
+                    failureSummary: [
+                        `Element <${el.tagName.toLowerCase()}> has the accessible text: "${accessibleName}".`,
+                        `Generic phrases are not meaningful when read out of context.`,
+                    ],
+                    tags: ['wcag2a', 'wcag244'],
+                    element: el,
+                })
+            )
+        }
+    })
+
+    if (violations.length) {
+        callback(violations)
+    }
+}
+
 export const checkListStructure = (
     $body: JQuery<HTMLElement>,
     callback: CustomAuditCallback
