@@ -929,7 +929,7 @@ export const checkLanguageMismatch = (
                     html: el.outerHTML,
                     failureSummary: [
                         `Declared lang attribute: "${declaredLang}".`,
-                        `Detected language (NLP): "${detectedLang3}".`,
+                        `Detected language: "${detectedLang3}".`,
                         'Ensure the "lang" attribute correctly identifies the primary language of the text content.',
                     ],
                     tags: ['wcag2aa', 'wcag312'],
