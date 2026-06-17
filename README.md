@@ -2,7 +2,7 @@
 
 ## What?
 
-The tool automatically checks your JavaScript web application for digital accessibility.
+This tool automatically checks your JavaScript web application for digital accessibility.
 
 ## How?
 
