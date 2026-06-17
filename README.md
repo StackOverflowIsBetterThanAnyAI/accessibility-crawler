@@ -22,7 +22,7 @@ jobs:
         uses: StackOverflowIsBetterThanAnyAI/full-accessibility-audit/.github/workflows/full-accessibility-audit.yml@master
         with:
             app_port: "5173"                                # specify the port of your app
-            start_command: "npx vite --port 5173 --host"    # specify the start command for your app with port and host flags
+            start_command: "npx vite --port 5173 --host"    # specify the start command for your app with port and host flags being set
 			node_version: "20"	                            # optional, default: "24"
 			skip_crawler: true	                            # optional, default: false
             base_path: "/path"                              # optional, default: "/"
