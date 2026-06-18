@@ -9,7 +9,8 @@
         "cy:run-audit": "cypress run --spec cypress/e2e/audit.cy.ts"
     },
     "dependencies": {
-        "franc": "^6.2.0"
+        "franc": "^6.2.0",
+        "jquery": "^4.0.0"
     },
     "prettier": "prettier-es5",
     "devDependencies": {

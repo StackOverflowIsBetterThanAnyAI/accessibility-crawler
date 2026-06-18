@@ -1,4 +1,5 @@
 import { franc } from 'franc'
+import $ from 'jquery'
 import { createCustomViolation } from './auditor-helper'
 import { CustomAuditCallback, CustomViolationReturnType } from './types'
 import { checkLanguageCompatibility } from './check-language-compatibility'
