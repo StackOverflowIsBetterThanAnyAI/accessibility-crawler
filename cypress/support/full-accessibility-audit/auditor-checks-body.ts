@@ -571,6 +571,9 @@ export const checkAdjacentLinks = (
         return
     }
 
+    const contextSelector =
+        'nav, ul, ol, header, footer, main, aside, form, section, search'
+
     links.each((index, el) => {
         if (index >= links.length - 1) {
             return
@@ -587,28 +590,41 @@ export const checkAdjacentLinks = (
             const textBetween = range.toString().trim()
 
             if (textBetween === '') {
-                violations.push(
-                    createCustomViolation({
-                        id: 'adjacent-redundant-links',
-                        impact: 'serious',
-                        description:
-                            'Adjacent links to the same destination should be combined',
-                        help: 'Combining adjacent image and text links for the same resource improves navigation for screen reader users',
-                        helpUrl:
-                            'https://www.w3.org/WAI/WCAG22/Techniques/html/H2',
-                        html:
-                            currentLink.outerHTML +
-                            ' ... ' +
-                            nextLink.outerHTML,
-                        failureSummary: [
-                            'Combine these two adjacent links into a single <a> tag.',
-                            'Check that every <img> element contained within the <a> element has a null value set for its alt attribute.',
-                            'Check that the <a> element contains an <img> element that has either a null alt attribute value or a value that supplements the link text and describes the image.',
-                        ],
-                        tags: ['wcag2a', 'wcag111'],
-                        element: currentLink,
-                    })
-                )
+                const currentContext = $(currentLink).closest(contextSelector)
+                const nextContext = $(nextLink).closest(contextSelector)
+
+                const hasCurrent = !!currentContext.length
+                const hasNext = !!nextContext.length
+
+                const areInDifferentContexts =
+                    hasCurrent &&
+                    hasNext &&
+                    currentContext[0] !== nextContext[0]
+
+                if (!areInDifferentContexts) {
+                    violations.push(
+                        createCustomViolation({
+                            id: 'adjacent-redundant-links',
+                            impact: 'serious',
+                            description:
+                                'Adjacent links to the same destination should be combined',
+                            help: 'Combining adjacent image and text links for the same resource improves navigation for screen reader users',
+                            helpUrl:
+                                'https://www.w3.org/WAI/WCAG22/Techniques/html/H2',
+                            html:
+                                currentLink.outerHTML +
+                                ' ... ' +
+                                nextLink.outerHTML,
+                            failureSummary: [
+                                'Combine these two adjacent links into a single <a> tag.',
+                                'Check that every <img> element contained within the <a> element has a null value set for its alt attribute.',
+                                'Check that the <a> element contains an <img> element that has either a null alt attribute value or a value that supplements the link text and describes the image.',
+                            ],
+                            tags: ['wcag2a', 'wcag111'],
+                            element: currentLink,
+                        })
+                    )
+                }
             }
         }
     })
