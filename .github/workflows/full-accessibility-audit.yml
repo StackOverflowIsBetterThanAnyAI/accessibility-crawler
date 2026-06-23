@@ -81,13 +81,12 @@ jobs:
 
           docker run --rm \
             --ipc=host \
-            --entrypoint /bin/sh \
             -e CYPRESS_BASE_URL="$BASE_URL" \
             --add-host=host.docker.internal:host-gateway \
             -v ${{ github.workspace }}/audit:/app/cypress/fixtures \
             -v ${{ github.workspace }}/cypress/screenshots:/app/cypress/screenshots \
             ghcr.io/stackoverflowisbetterthananyai/full-accessibility-audit:latest \
-            -c "
+            sh -c "
               npx wait-on $BASE_URL --timeout 60000 && \
               $AUDIT_COMMAND
             "
