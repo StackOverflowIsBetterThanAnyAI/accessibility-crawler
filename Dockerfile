@@ -7,6 +7,4 @@ RUN npm ci && npm cache clean --force
 
 COPY . .
 
-ENV CYPRESS_BASE_URL=http://localhost:5173
-
 CMD ["npm", "run", "cy:run-audit"]
