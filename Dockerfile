@@ -7,4 +7,6 @@ RUN npm ci && npm cache clean --force
 
 COPY . .
 
-CMD ["npm", "run", "cy:run-audit"]
+ENTRYPOINT ["npm", "run"]
+
+CMD ["cy:run-audit"]
