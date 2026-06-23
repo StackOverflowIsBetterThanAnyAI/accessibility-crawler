@@ -173,7 +173,7 @@ export const processViolations = (
                     .join('\n')
 
                 existingError.message =
-                    `issue on [${currentPath}] - [${details.tagString} (${details.impact} severity)]:\n` +
+                    `Issue on [${currentPath}] - [${details.tagString} (${details.impact} severity)]:\n` +
                     `${details.help}.\n\n` +
                     `Element: ${details.html}\n\n` +
                     `Exact DOM Position: ${details.exactDomLocation}\n\n` +
@@ -182,7 +182,7 @@ export const processViolations = (
                     `Help: ${details.helpUrl}`
             } else {
                 const formattedMessage =
-                    `issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
+                    `Issue on [${currentPath}] - [${tagString} (${violation.impact} severity)]:\n` +
                     `${violation.help}.\n\n` +
                     `Element: ${node.html}\n\n` +
                     `Exact DOM Position: ${exactDomLocation}\n\n` +
