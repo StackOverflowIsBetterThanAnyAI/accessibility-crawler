@@ -1,7 +1,7 @@
 import { runAxeAudit } from '../support/full-accessibility-audit/auditor'
 import { ErrorListType } from '../support/full-accessibility-audit/types'
 
-describe('Accessibility Audit: Separated Crawler from Auditor', () => {
+describe('Accessibility Audit', () => {
     const baseUrl = Cypress.config('baseUrl')
     if (!baseUrl) {
         throw new Error('baseUrl is not defined. Please check your config.')
@@ -22,7 +22,7 @@ describe('Accessibility Audit: Separated Crawler from Auditor', () => {
     const errorList: ErrorListType[] = []
 
     sitemap.urls.forEach((path) => {
-        it(`Check: ${path}`, () => {
+        it(`Auditing: ${path}`, () => {
             runAxeAudit(path, errorList, sitemap.globalStorage)
         })
     })

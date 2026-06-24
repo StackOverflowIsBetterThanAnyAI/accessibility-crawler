@@ -50,7 +50,7 @@ describe('Crawler: Discovery Phase', () => {
         )
     }
 
-    it('crawls all pages but filters sitemap.json based on config', () => {
+    it('Crawls all pages based on config', () => {
         cy.task<boolean>('checkIfFileExists', sitemapPath).then((exists) => {
             if (exists) {
                 cy.readFile(sitemapPath).then((existingSitemap) => {
