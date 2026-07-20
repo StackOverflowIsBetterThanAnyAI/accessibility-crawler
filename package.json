@@ -19,7 +19,7 @@
         "@types/node": "^24.12.4",
         "aria-api": "^0.9.1",
         "axe-core": "^4.12.1",
-        "cypress": "^15.18.0",
+        "cypress": "^15.18.1",
         "cypress-axe": "^1.7.0",
         "eslint": "^9.39.4",
         "eslint-plugin-react-hooks": "^7.1.1",
@@ -27,7 +27,10 @@
         "globals": "^17.7.0",
         "prettier-es5": "^0.0.4",
         "typescript": "~5.9.3",
-        "typescript-eslint": "^8.62.0",
+        "typescript-eslint": "^8.64.0",
         "wait-on": "^9.0.10"
+    },
+    "allowScripts": {
+        "cypress@15.18.1": true
     }
 }
