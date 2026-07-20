@@ -1021,7 +1021,8 @@ export const checkLabelInNameStrict = (
         }
 
         const visibleText = $el.text().trim()
-        if (visibleText.length <= 1) {
+        const actualCharacterCount = [...visibleText].length
+        if (actualCharacterCount <= 1) {
             return
         }
 
