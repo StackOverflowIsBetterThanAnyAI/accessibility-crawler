@@ -1,6 +1,9 @@
 import { addLeadingSlash, removeTrailingSlash } from './url-helper'
+import { waitForElementsToStabilize } from './wait-for-elements-to-stabilize'
 
 export const getInternalLinks = (baseUrl: string) => {
+    waitForElementsToStabilize('a')
+
     return cy.get('body').then(($body) => {
         const links = $body.find('a')
         if (!links.length) {
